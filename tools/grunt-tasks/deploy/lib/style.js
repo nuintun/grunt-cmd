@@ -19,8 +19,8 @@ exports.init = function (grunt){
     }
 
     // compressor css
-    function compressor(data){
-        return cleancss.process(data, {
+    function compressor(code){
+        return cleancss.process(code, {
             keepSpecialComments: 0,
             removeEmpty: true,
             debug: verbose
@@ -29,26 +29,27 @@ exports.init = function (grunt){
 
     exports.cssConcat = function (file, options){
         var fpath = normalize(file.src);
-        var data = grunt.file.read(fpath);
-        var meta = css.parse(data)[0];
+        var code = grunt.file.read(fpath);
+        var meta = css.parse(code)[0];
         var id = meta.id;
         var records = grunt.option('concat-records');
         var imports = [];
 
+        // no id
         if (!id) {
             grunt.log.write('>>   '.red + 'Require a transported file'.red + linefeed);
             return false;
         }
 
+        // for each import
         while (hasImport()) {
-            // TODO nothing
+            // nothing
         }
 
+        // check import
         function hasImport(){
-            meta = css.parse(data)[0];
-
             var hasImport = false;
-            data = css.stringify(meta.code, function (node){
+            code = css.stringify(meta.code, function (node){
                 if (node.type === 'import' && node.id) {
                     hasImport = true;
                     return importNode(node);
@@ -57,14 +58,14 @@ exports.init = function (grunt){
             return hasImport;
         }
 
+        // import node
         function importNode(node){
             // circle imports
-            if (grunt.util._.contains(imports, node.id)) {
-                return false;
-            }
+            if (grunt.util._.contains(imports, node.id)) return false;
+            // cache id
             imports.push(node.id);
 
-            var fpath, parsed;
+            var fpath, meta;
             if (node.id.charAt(0) === '.') {
                 fpath = normalize(path.join(path.dirname(file.src), node.id));
                 if (!/\.css$/.test(fpath)) fpath += '.css';
@@ -73,20 +74,22 @@ exports.init = function (grunt){
                     return false;
                 }
 
-                parsed = css.parse(grunt.file.read(fpath))[0];
+                meta = css.parse(grunt.file.read(fpath))[0];
 
                 // remove circle imports
-                if (parsed.id === id) {
+                if (meta.id === id) {
                     grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' has circle dependencies'.red + linefeed);
                     return false;
                 }
-                if (!parsed.id) {
+                if (!meta.id) {
                     grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' has no defined id'.red + linefeed);
                 }
 
-                parsed.id = node.id;
-                return parsed;
+                meta.id = node.id;
+                
+                return meta;
             }
+            
             var fileInPaths;
             options.librarys.some(function (basedir){
                 fpath = normalize(path.join(basedir, node.id));
@@ -105,32 +108,26 @@ exports.init = function (grunt){
                 grunt.log.write('>>   '.red + 'File '.red + node.id.grey + ' not found'.red + linefeed);
                 return false;
             }
-            parsed = css.parse(grunt.file.read(fileInPaths))[0];
+            meta = css.parse(grunt.file.read(fileInPaths))[0];
 
-            if (!parsed.id) {
+            if (!meta.id) {
                 grunt.log.write('>>   '.red + 'File '.red + fileInPaths.grey + ' has no defined id'.red + linefeed);
             }
 
-            parsed.id = node.id;
-            return parsed;
+            meta.id = node.id;
+            return meta;
         }
 
-        function toString(){
-            meta = css.parse(data)[0];
+        // get css code string
+        function getCode(){
+            meta = css.parse(meta)[0];
             return css.stringify(meta.code, function (node){
-                if (node.id && records[node.id]) {
-                    return false;
-                }
-                if (node.id) {
-                    if (node.id.charAt(0) === '.') {
-                        node.id = iduri.absolute(id, node.id);
-                    }
-                    if (records[node.id]) {
-                        return false;
-                    }
-                    records[node.id] = node.id;
-                    return node;
-                }
+                if (node.id && records[node.id]) return false;             
+                if (!node.id) return false;
+                if (node.id.charAt(0) === '.') node.id = iduri.absolute(id, node.id);                
+                if (records[node.id]) return false;
+                records[node.id] = node.id;
+                return node;
             });
         }
 
@@ -138,26 +135,25 @@ exports.init = function (grunt){
         var concat = {
             compressor: {
                 id: /\.css$/.test(id) ? id : id + '.css',
-                content: []
+                code: []
             },
             uncompressor: {
                 id: /\.css$/.test(id) ? id.replace(/\.css$/, '-debug.css') : id + '-debug.css',
-                content: []
+                code: []
             }
         };
 
-        // css content
-        data = toString();
-        // compressor content
-        concat.compressor.content.push(format('/*! define %s */', concat.compressor.id), data);
-        concat.compressor.content = concat.compressor.content.join(linefeed);
+        // css code
+        code = getCode();
+        // compressor code
+        concat.compressor.code.push(format('/*! define %s */', concat.compressor.id), code);
+        concat.compressor.code = concat.compressor.code.join(linefeed);
         grunt.log.write('>>   '.green + 'Compressoring css '.cyan + linefeed);
-        concat.compressor.content = compressor(concat.compressor.content);
+        concat.compressor.code = compressor(concat.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor css success'.cyan + ' ...').ok();
         // uncompressor content
-        concat.uncompressor.content.push(format('/*! define %s */', concat.uncompressor.id), data);
-        concat.uncompressor.content = concat.uncompressor.content.join(linefeed);
-        concat.uncompressor.content = concat.uncompressor.content;
+        concat.uncompressor.code.push(format('/*! define %s */', concat.uncompressor.id), code);
+        concat.uncompressor.code = concat.uncompressor.code.join(linefeed);
         return concat;
     };
 
