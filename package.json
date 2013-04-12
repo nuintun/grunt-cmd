@@ -1,0 +1,16 @@
+{
+  "family": "foxuc",
+  "name": "resource",
+  "version": "1.0.0",
+  "description": "focuc web site",
+  "author": "Newton Niu <yongmiui@gmail.com>",
+  "engines": {
+    "node": "~0.6.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "clean-css": "~0.10.2",
+    "uglify-js": "~2.2.5"
+  }
+}

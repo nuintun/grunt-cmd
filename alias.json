@@ -1,0 +1,18 @@
+{
+    "alias": {
+        "$": "base/jquery/1.9.1/jquery",
+        "tooltips": "util/tooltips/1.0.0/tooltips",
+        "ajax": "util/ajax/1.0.0/ajax",
+        "base": "base/base/1.0.1/base",
+        "class": "base/base/1.0.1/class",
+        "events": "base/base/1.0.1/events",
+        "widget": "base/widget/1.0.3/widget",
+        "template": "base/template/2.0.0/template",
+        "templatable": "base/widget/1.0.3/templatable",
+        "switchable": "common/switchable/0.9.12/switchable",
+        "easing": "util/easing/1.0.0/easing",
+        "common/asynclists/1.0.0/src/asynclists": "common/asynclists/1.0.0/asynclists",
+        "common/switchable/0.9.12/src/tabs": "common/switchable/0.9.12/tabs",
+        "common/switchable/0.9.12/src/slide": "common/switchable/0.9.12/slide"
+    }
+}
