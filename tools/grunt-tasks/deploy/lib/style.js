@@ -69,12 +69,15 @@ exports.init = function (grunt){
             var fpath, meta;
             if (node.id.charAt(0) === '.') {
                 fpath = normalize(path.join(path.dirname(file.src), node.id));
+                
                 if (!/\.css$/.test(fpath)) fpath += '.css';
+                
                 if (!grunt.file.exists(fpath)) {
                     grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' not found'.red + linefeed);
                     return false;
                 }
 
+                // get meta
                 meta = css.parse(grunt.file.read(fpath))[0];
 
                 // remove circle imports
@@ -82,6 +85,8 @@ exports.init = function (grunt){
                     grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' has circle dependencies'.red + linefeed);
                     return false;
                 }
+                
+                // no meta id
                 if (!meta.id) {
                     grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' has no defined id'.red + linefeed);
                 }
@@ -92,25 +97,22 @@ exports.init = function (grunt){
             }
             
             // find file in librarys
-            var fileInPaths;
-            options.librarys.some(function (basedir){
-                fpath = normalize(path.join(basedir, node.id));
-                if (!/\.css$/.test(fpath)) fpath += '.css';
-                if (grunt.file.exists(fpath)) {
-                    fileInPaths = fpath;
-                    return true;
-                }
-            });
+            fpath = normalize(path.join(options.librarys, options.root, node.id));
+            if (!/\.css$/.test(fpath)) fpath += '.css';
             
-            if (!fileInPaths) {
+            // file not exists
+            if (!grunt.file.exists(fpath)) {
                 grunt.log.write('>>   '.red + 'File '.red + node.id.grey + ' not found'.red + linefeed);
                 return false;
             }
             
-            meta = css.parse(grunt.file.read(fileInPaths))[0];
+            // get meta
+            meta = css.parse(grunt.file.read(fpath))[0];
 
-            if (!meta.id) grunt.log.write('>>   '.red + 'File '.red 
-                + fileInPaths.grey + ' has no defined id'.red + linefeed);
+            // no meta id
+            if (!meta.id) {
+                grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' has no defined id'.red + linefeed);              
+            }          
 
             meta.id = node.id;
             return meta;
