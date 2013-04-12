@@ -66,27 +66,21 @@ exports.init = function (grunt){
         if (records[meta.id]) return [];
         records[meta.id] = meta.id;
 
+        // for each
         meta.dependencies.forEach(function (id){
+            meta.dependencies.forEach(function (id){
             if (id.charAt(0) === '.') {
-
-                id = iduri.absolute(meta.id, id);
-                if (excludes.indexOf(id) === -1) {
-
-                    deps.push(id);
-                    if (/\.js$/.test(iduri.appendext(id))) {
-                        deps = grunt.util._.union(deps, concatDeps(id, options));
-                    }
-                }
-            } else if (!records[id]) {
-                if (excludes.indexOf(id) === -1) {
-                    deps.push(id);
-                    if (/\.js$/.test(iduri.appendext(id))) {
-                        deps = grunt.util._.union(deps, concatDeps(id, options));
-                    }
+                id = iduri.absolute(meta.id, id);                
+            }
+            if (id !== meta.id && meexcludes.indexOf(id) === -1) {
+                deps.push(id);
+                if (/\.js$/.test(iduri.appendext(id))) {
+                    deps = grunt.util._.union(deps, concatDeps(id, options));
                 }
             }
             records[id] = id;
         });
+        
         return deps;
     }
 
