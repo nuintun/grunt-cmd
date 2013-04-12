@@ -72,7 +72,7 @@ exports.init = function (grunt){
             if (id.charAt(0) === '.') {
                 id = iduri.absolute(meta.id, id);                
             }
-            if (id !== meta.id && meexcludes.indexOf(id) === -1) {
+            if (id !== meta.id && excludes.indexOf(id) === -1) {
                 deps.push(id);
                 if (/\.js$/.test(iduri.appendext(id))) {
                     deps = grunt.util._.union(deps, concatDeps(id, options));
