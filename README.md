@@ -1,1 +1,1 @@
-Foxuc Web Site
+cmd build and deploy with grunt
