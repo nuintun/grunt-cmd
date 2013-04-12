@@ -1,13 +1,14 @@
 {
-  "family": "foxuc",
-  "name": "resource",
+  "family": "cmd-grunt",
+  "name": "cmd-grunt",
   "version": "1.0.0",
-  "description": "focuc web site",
+  "description": "cmd build and deploy with grunt !",
   "author": "Newton Niu <yongmiui@gmail.com>",
-  "engines": {
-    "node": "~0.6.0"
+  "dependencies": {
+    "grunt": "~0.4.1",
+    "clean-css": "~0.10.2",
+    "uglify-js": "~2.2.5"
   },
-  "dependencies": {},
   "devDependencies": {
     "grunt": "~0.4.1",
     "clean-css": "~0.10.2",
