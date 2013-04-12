@@ -59,8 +59,8 @@ exports.init = function (grunt){
         var deps = [];
         var excludes = options.excludes;
         var records = grunt.option('concat-records');
-        var data = grunt.file.read(fpath);
-        var meta = ast.parseFirst(data);
+        var code = grunt.file.read(fpath);
+        var meta = ast.parseFirst(code);
 
         if (records[meta.id]) return [];
         records[meta.id] = meta.id;
@@ -95,16 +95,16 @@ exports.init = function (grunt){
         // read file
         var deps = [];
         var excludes = options.excludes;
-        var data = grunt.file.read(fpath);
-        var meta = ast.parseFirst(data);
+        var code = grunt.file.read(fpath);
+        var meta = ast.parseFirst(code);
         var concat = {
             compressor: {
                 id: iduri.appendext(meta.id),
-                content: []
+                code: []
             },
             uncompressor: {
                 id: iduri.appendext(meta.id + '-debug'),
-                content: []
+                code: []
             }
         };
         //concat
@@ -128,36 +128,36 @@ exports.init = function (grunt){
         deps.forEach(function (id){
             var fpath = iduri.appendext(normalize(path.join(options.librarys, options.root, id)));
             if (grunt.file.exists(fpath)) {
-                var data = grunt.file.read(fpath);
+                var code = grunt.file.read(fpath);
                 // minify
-                concat.compressor.content.push(data);
+                concat.compressor.code.push(code);
                 // create debug
-                concat.uncompressor.content.push(data);
+                concat.uncompressor.code.push(code);
                 // return
                 return;
             }
-            grunt.log.warn('file '.red + fpath.grey + ' not found !'.red);
+            grunt.log.write('>>   File '.red + fpath.grey + ' not found'.red + linefeed);
         });
         // compressor content
-        concat.compressor.content.push(data);
-        concat.compressor.content = concat.compressor.content.join(linefeed);
+        concat.compressor.code.push(code);
+        concat.compressor.code = concat.compressor.code.join(linefeed);
         var sourcemapName = concat.compressor.id.split('/').pop() + '.map';
         grunt.log.write('>>   '.green + 'Compressoring script '.cyan + linefeed);
-        var compressorAst = compressor(concat.compressor.content, sourcemapName);
+        var compressorAst = compressor(concat.compressor.code, sourcemapName);
         grunt.log.write('>>   '.green + 'Compressor script success'.cyan + ' ...').ok();
-        concat.compressor.content = compressorAst.code + linefeed + '//@ sourceMappingURL=' + sourcemapName;
+        concat.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' + sourcemapName;
         // compressor mapping
         grunt.log.write('>>   '.green + 'Createing script sourcemap '.cyan + linefeed);
         concat.sourcemap = {
             id: iduri.join(iduri.dirname(concat.compressor.id), sourcemapName),
-            content: fixSourcemap(compressorAst.map, concat.compressor.id)
+            code: fixSourcemap(compressorAst.map, concat.compressor.id)
         };
         grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
         // uncompressor content
-        concat.uncompressor.content.push(data);
-        concat.uncompressor.content = concat.uncompressor.content.join(linefeed);
+        concat.uncompressor.code.push(code);
+        concat.uncompressor.code = concat.uncompressor.code.join(linefeed);
         grunt.log.write('>>   '.green + 'Createing debug script '.cyan + linefeed);
-        concat.uncompressor.content = modify(concat.uncompressor.content);
+        concat.uncompressor.code = modify(concat.uncompressor.code);
         grunt.log.write('>>   '.green + 'Create debug script success'.cyan + ' ...').ok();
         return concat;
     };
