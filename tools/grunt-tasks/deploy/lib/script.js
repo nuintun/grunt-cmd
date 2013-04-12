@@ -39,14 +39,15 @@ exports.init = function (grunt){
         });
     }
 
-    //fix sourcemap
+    // fix sourcemap
     function fixSourcemap(code, file){
         var mini = iduri.basename(file);
         var full = mini.replace(/\.js$/, '-debug.js');
         return code.replace('"file":"{{file}}"', '"file":"' + mini + '"')
             .replace('"sources":["?"]', '"sources":["' + full + '"]');
     }
-
+    
+    // get all concat  dependencies, not include the excludes file
     function concatDeps(fpath, options){
         // file path
         fpath = path.join(options.librarys, options.root, iduri.appendext(fpath));
@@ -55,7 +56,7 @@ exports.init = function (grunt){
             grunt.log.write('>>   '.red + 'Can\'t find module '.red + fpath.grey + linefeed);
             return [];
         }
-        // deps records data meta
+        // deps, excludes, records, code, meta
         var deps = [];
         var excludes = options.excludes;
         var records = grunt.option('concat-records');
@@ -89,7 +90,7 @@ exports.init = function (grunt){
         return deps;
     }
 
-    // exports
+    // exports js concat
     exports.jsConcat = function (file, options){
         var fpath = normalize(file.src);
         // read file
