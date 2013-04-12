@@ -19,11 +19,11 @@ exports.init = function (grunt){
         // file content
         var fpath = normalize(file.src);
         var dest = normalize(file.dest);
-        var data = file.content || grunt.file.read(fpath);
+        var code = file.code || grunt.file.read(fpath);
 
-        // ast parsed
-        var parsed = ast.getAst(data);
-        var meta = ast.parseFirst(parsed);
+        // code ast
+        var codeAst = ast.getAst(code);
+        var meta = ast.parseFirst(codeAst);
         // meta
         if (!meta) {
             grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' not a cmd module'.red + linefeed);
@@ -42,7 +42,7 @@ exports.init = function (grunt){
             '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed
         );
         // modify js file
-        data = ast.modify(data, {
+        code = ast.modify(code, {
             id: iduri.idFromPackage(options.pkg, file.name, options.format),
             dependencies: deps,
             require: function (v){
@@ -50,7 +50,7 @@ exports.init = function (grunt){
             }
         });
         // write file
-        grunt.file.write(dest, data.print_to_string({
+        grunt.file.write(dest, code.print_to_string({
             beautify: true,
             comments: true
         }));
@@ -60,14 +60,13 @@ exports.init = function (grunt){
     function moduleDependencies(meta, options){
         var deps = [];
         meta.dependencies.forEach(function (id){
-            if (id.charAt(0) === '.') {
-                deps.push(id);
-            } else {
-                if (!iduri.isAlias(options.pkg, id)) {
-                    grunt.log.write('>>   '.red + 'Alias '.red + id.green + ' not defined'.red + linefeed);
-                    return deps.push(id);
-                }
+            if(iduri.isAlias(options.pkg, id)){
                 deps.push(iduri.parseAlias(options.pkg, id));
+            }else{
+                deps.push(id);
+                if (id.charAt(0) !== '.') {
+                    grunt.log.write('>>   '.red + 'Alias '.red + id.green + ' not defined'.red + linefeed);
+                }             
             }
         });
         return deps;
