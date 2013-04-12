@@ -24,7 +24,7 @@ module.exports = function (grunt){
             librarys: '.librarys',
             output: 'js',
             pkg: grunt.file.readJSON('alias.json'),
-            banner: '/** foxuc web project author: Newton **/'
+            banner: '/** cmd-build author: Newton email: yongmiui@gmail.com **/'
         });
 
         this.files.forEach(function (file){
@@ -38,13 +38,11 @@ module.exports = function (grunt){
                 options.root = grunt.util._.isString(options.root) ? options.root : 'script';
                 // file include
                 var include = options.include || 'default';
-                include = grunt.util._.isFunction(include) ?
-                    include(fpath) : include;
+                include = grunt.util._.isFunction(include) ? include(fpath) : include;
                 options.include = include === '.' || include === '*' ? include : 'default';
                 // file excludes
                 var excludes = options.excludes || [];
-                excludes = grunt.util._.isFunction(excludes) ?
-                    excludes(fpath) : excludes;
+                excludes = grunt.util._.isFunction(excludes) ? excludes(fpath) : excludes;
                 excludes = Array.isArray(options.excludes) ? excludes : [].push(excludes);
                 options.excludes = grunt.util._.uniq(excludes);
                 // real file path
@@ -62,28 +60,29 @@ module.exports = function (grunt){
                     grunt.file.copy(fpath, dest);
                     return grunt.log.write('>> '.green + 'Copy '.cyan + dest.grey + ' ...').ok();
                 }
-                // start deploy
+                // start concat
                 grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + linefeed);
-                // deploy file start
-                var deploy = parsers[extname]({ src: fpath }, options);
-                // deploy fail
-                if (!deploy) return;
+                // concat file start
+                var concat = parsers[extname]({ src: fpath }, options);
+                // concat fail
+                if (!concat) return;
+                // banner
                 var banner = grunt.util._.isString(options.banner) ? options.banner : '';
                 banner = banner.trim();
                 banner = banner ? banner + linefeed : banner;
                 // compressor file
-                dest = normalize(path.join(options.output, deploy.compressor.id));
-                grunt.file.write(dest, banner + deploy.compressor.content);
+                dest = normalize(path.join(options.output, concat.compressor.id));
+                grunt.file.write(dest, banner + concat.compressor.code);
                 grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
-                // compressor mapping
-                if (deploy.sourcemap) {
-                    dest = normalize(path.join(options.output, deploy.sourcemap.id));
-                    grunt.file.write(dest, deploy.sourcemap.content);
+                // compressor mapping, for the online debug, now chrome support sourcemap
+                if (concat.sourcemap) {
+                    dest = normalize(path.join(options.output, concat.sourcemap.id));
+                    grunt.file.write(dest, concat.sourcemap.code);
                     grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
                 }
                 // uncompressor file
-                dest = normalize(path.join(options.output, deploy.uncompressor.id));
-                grunt.file.write(dest, banner + deploy.uncompressor.content);
+                dest = normalize(path.join(options.output, concat.uncompressor.id));
+                grunt.file.write(dest, banner + concat.uncompressor.code);
                 grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
             });
         });
