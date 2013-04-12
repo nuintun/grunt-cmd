@@ -66,9 +66,7 @@ exports.init = function (grunt){
         if (records[meta.id]) return [];
         records[meta.id] = meta.id;
 
-        // for each
         meta.dependencies.forEach(function (id){
-            meta.dependencies.forEach(function (id){
             if (id.charAt(0) === '.') {
                 id = iduri.absolute(meta.id, id);                
             }
@@ -121,7 +119,9 @@ exports.init = function (grunt){
 
         // read file
         deps.forEach(function (id){
-            var fpath = iduri.appendext(normalize(path.join(options.librarys, options.root, id)));
+            if(id === meta.id) return;
+            var fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(id)));
+            if(!/\.js$/.test(fpath)) return;
             if (grunt.file.exists(fpath)) {
                 var code = grunt.file.read(fpath);
                 // minify
