@@ -1,7 +1,5 @@
+// GruntFile
 module.exports = function (grunt){
-    var path = require('path');
-    // grunt init
-    var alias = grunt.file.readJSON('alias.json');
     // init config
     grunt.initConfig({
         transport: {
@@ -65,7 +63,7 @@ module.exports = function (grunt){
                     }
                 ]
             },
-            css3pie: {
+            htc: {
                 options: {
                     root: 'style',
                     family: 'css3pie'
@@ -90,7 +88,7 @@ module.exports = function (grunt){
                     }
                 ]
             },
-            swfflash: {
+            swf: {
                 options: {
                     root: 'script'
                 },
@@ -118,12 +116,12 @@ module.exports = function (grunt){
                 options: {
                     root: 'style',
                     output: 'css',
-                    banner: '/** foxuc web project author: 项思博 **/'
+                    banner: '/** cmd-build author: Newton email: yongmiui@gmail.com date: ' + Date.now() + ' **/'
                 },
                 files: [
                     {
                         cwd: '.librarys/style',
-                        src: ['**/base.css', '**/Index.css']
+                        src: ['**/base.css', '**/index.css']
                     }
                 ]
             }
