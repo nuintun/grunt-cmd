@@ -58,10 +58,8 @@ module.exports = function (grunt){
                 fpath = normalize(fpath);
                 // file source
                 var source = options.source;
-                source = grunt.util._.isFunction(source) ?
-                    source(fpath) : source;
-                source = grunt.util._.isString(source) ?
-                    source : 'src';
+                source = grunt.util._.isFunction(source) ? source(fpath) : source;
+                source = grunt.util._.isString(source) ? source : 'src';
                 source = source.replace(/\\/g, '/').replace(/^(\.|\/)[./]*|[/]*$/g, '');
                 // split file path
                 var dirs = normalize(path.dirname(fpath).replace(sourceRegx(source), '')).split('/');
@@ -96,11 +94,11 @@ module.exports = function (grunt){
                     grunt.file.copy(fpath, dest);
                     return grunt.log.write('>> '.green + 'Copy to '.cyan + dest.grey + ' ...').ok();
                 }
-                // file data
-                var content = grunt.file.read(fpath);
+                // code
+                var code = grunt.file.read(fpath);
                 // grunt template
                 if (options.process) {
-                    content = grunt.template.process(content, options.process);
+                    code = grunt.template.process(code, options.process);
                 }
 
                 // file info
@@ -108,7 +106,7 @@ module.exports = function (grunt){
                 // fileparsers
                 fileparsers({
                     src: fpath,
-                    content: content,
+                    code: code,
                     name: fname,
                     dest: dest
                 }, options);
