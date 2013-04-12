@@ -27,6 +27,7 @@ exports.init = function (grunt){
         });
     }
 
+    // css concat
     exports.cssConcat = function (file, options){
         var fpath = normalize(file.src);
         var code = grunt.file.read(fpath);
@@ -108,7 +109,8 @@ exports.init = function (grunt){
             
             meta = css.parse(grunt.file.read(fileInPaths))[0];
 
-            if (!meta.id) grunt.log.write('>>   '.red + 'File '.red + fileInPaths.grey + ' has no defined id'.red + linefeed);
+            if (!meta.id) grunt.log.write('>>   '.red + 'File '.red 
+                + fileInPaths.grey + ' has no defined id'.red + linefeed);
 
             meta.id = node.id;
             return meta;
