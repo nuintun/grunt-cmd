@@ -6,61 +6,62 @@ exports.init = function (grunt){
     var exports = {};
     var path = require('path');
     var format = require('util').format;
-
+    var ast = require('../../cmd-util').ast;
+    var iduri = require('../../cmd-util').iduri;
+    var css = require('../../cmd-util').css;
+    var linefeed = grunt.util.linefeed;
+    
     // normalize uri to linux format
     function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
-    var ast = require('../../cmd-util').ast;
-    var iduri = require('../../cmd-util').iduri;
-    var css = require('../../cmd-util').css;
-    var linefeed = grunt.util.linefeed;
-
+    // css to js parser
     exports.css2jsParser = function (file, options){
         var fpath = normalize(file.src);
         var dest = normalize(file.dest) + '.js';
         // don't transport debug css files
         if (/\-debug\.css$/.test(fpath)) return;
         // transport css to js
-        var data = file.content || grunt.file.read(fpath);
+        var code = file.code || grunt.file.read(fpath);
         var id = iduri.idFromPackage(options.pkg, file.name, options.format);
 
-        data = css2js(data, id);
-        data = ast.getAst(data).print_to_string({
+        // format code
+        code = css2js(code, id);
+        code = ast.getAst(code).print_to_string({
             beautify: true,
             comments: true
         });
-        grunt.file.write(dest, data);
+        grunt.file.write(dest, code);
     };
 
     // the real css parser
     exports.cssParser = function (file, options){
         var fpath = normalize(file.src);
         var dest = normalize(file.dest);
-        var data = file.content || grunt.file.read(fpath);
-        data = css.parse(data);
+        var code = file.code || grunt.file.read(fpath);
+        var codeAst = css.parse(code);
 
         // file
-        var ret = css.stringify(data[0].code, function (node){
+        code = css.stringify(codeAst[0].code, function (node){
             if (node.type === 'import' && node.id) {
-                if (node.id.charAt(0) === '.') {
-                    return node;
-                }
-                if (!iduri.isAlias(options.pkg, node.id)) {
-                    grunt.log.write('>>   '.red + 'Alias '.red + node.id.green + ' not defined'.red + linefeed);
-                } else {
+                if(iduri.isAlias(options.pkg, node.id)) {
                     node.id = iduri.parseAlias(options.pkg, node.id);
-                    if (!/\.css$/.test(node.id)) {
-                        node.id += '.css';
+                    if (!/\.css$/.test(node.id)) node.id += '.css';
+                } else {
+                    if(!node.id.charAt(0) === '.') {
+                        grunt.log.write('>>   '.red + 'Alias '.red + node.id.green + ' not defined'.red + linefeed);
                     }
-                    return node;
                 }
+                
+                return node;
             }
         });
+        
+        // transport css
         var id = iduri.idFromPackage(options.pkg, file.name, options.format);
         var banner = format('/*! define %s */', id);
-        grunt.file.write(dest, [banner, ret].join('\n'));
+        grunt.file.write(dest, [banner, code].join('\n'));
     };
 
     return exports;
