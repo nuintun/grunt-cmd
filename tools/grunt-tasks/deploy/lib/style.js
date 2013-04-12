@@ -90,29 +90,25 @@ exports.init = function (grunt){
                 return meta;
             }
             
+            // find file in librarys
             var fileInPaths;
             options.librarys.some(function (basedir){
                 fpath = normalize(path.join(basedir, node.id));
                 if (!/\.css$/.test(fpath)) fpath += '.css';
-                var debugfile = fpath.replace(/\.css$/, '-debug.css');
-                // prefer debug file, because it contains all meta info
-                if (grunt.file.exists(debugfile)) {
-                    fileInPaths = debugfile;
-                    return true;
-                } else if (grunt.file.exists(fpath)) {
+                if (grunt.file.exists(fpath)) {
                     fileInPaths = fpath;
                     return true;
                 }
             });
+            
             if (!fileInPaths) {
                 grunt.log.write('>>   '.red + 'File '.red + node.id.grey + ' not found'.red + linefeed);
                 return false;
             }
+            
             meta = css.parse(grunt.file.read(fileInPaths))[0];
 
-            if (!meta.id) {
-                grunt.log.write('>>   '.red + 'File '.red + fileInPaths.grey + ' has no defined id'.red + linefeed);
-            }
+            if (!meta.id) grunt.log.write('>>   '.red + 'File '.red + fileInPaths.grey + ' has no defined id'.red + linefeed);
 
             meta.id = node.id;
             return meta;
