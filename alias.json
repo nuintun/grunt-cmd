@@ -11,8 +11,8 @@
         "templatable": "base/widget/1.0.3/templatable",
         "switchable": "common/switchable/0.9.12/switchable",
         "easing": "util/easing/1.0.0/easing",
-        "common/asynclists/1.0.0/src/asynclists": "common/asynclists/1.0.0/asynclists",
-        "common/switchable/0.9.12/src/tabs": "common/switchable/0.9.12/tabs",
-        "common/switchable/0.9.12/src/slide": "common/switchable/0.9.12/slide"
+        "asynclists": "common/asynclists/1.0.0/asynclists",
+        "tabs": "common/switchable/0.9.12/tabs",
+        "slide": "common/switchable/0.9.12/slide"
     }
 }
