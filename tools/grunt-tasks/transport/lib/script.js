@@ -19,7 +19,7 @@ exports.init = function (grunt){
         // file content
         var fpath = normalize(file.src);
         var dest = normalize(file.dest);
-        var code = file.code || grunt.file.read(fpath);
+        var code = ast.getAst(file.code);
 
         // code meta
         var meta = ast.parseFirst(code);
