@@ -28,7 +28,7 @@ exports.init = function(grunt) {
             grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' not a cmd module'.red + linefeed);
             return grunt.file.copy(fpath, dest);
         } else if (meta.id) {
-            grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' found module id'.grey + linefeed);
+            grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' found module id'.red + linefeed);
             return grunt.file.copy(fpath, dest);
         }
         // deps
