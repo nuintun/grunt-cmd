@@ -74,17 +74,17 @@ module.exports = function(grunt) {
                 banner = banner.trim();
                 banner = banner ? banner + linefeed : banner;
                 // minify file
-                dest = normalize(path.join(options.output, merger.compressor.id));
+                dest = normalize(path.join(options.output, merger.compressor.src));
                 grunt.file.write(dest, banner + merger.compressor.code);
                 grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
                 // source map, for the online debug, now chrome support sourcemap
                 if (merger.sourcemap) {
-                    dest = normalize(path.join(options.output, merger.sourcemap.id));
+                    dest = normalize(path.join(options.output, merger.sourcemap.src));
                     grunt.file.write(dest, merger.sourcemap.code);
                     grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
                 }
                 // debug file
-                dest = normalize(path.join(options.output, merger.uncompressor.id));
+                dest = normalize(path.join(options.output, merger.uncompressor.src));
                 grunt.file.write(dest, banner + merger.uncompressor.code);
                 grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
             });

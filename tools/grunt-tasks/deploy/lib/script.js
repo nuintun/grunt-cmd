@@ -87,48 +87,61 @@ exports.init = function(grunt) {
     exports.jsConcat = function(file, options) {
         // code set
         var code = [];
+        var src = normalize(path.relative(path.join(options.librarys, options.root), file.src));
         var excludes = options.excludes;
         var meta = ast.parseFirst(file.code);
-        // concat
-        switch (options.include) {
-            case '.':
-                meta.dependencies.forEach(function(id) {
-                    if (id.charAt(0) === '.') {
-                        id = iduri.absolute(meta.id, id);
-                        if (excludes.indexOf(id) === -1 && id !== meta.id) {
-                            var fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(id)));
-                            if (grunt.file.exists(fpath)) {
-                                code.push(grunt.file.read(fpath));
-                            } else {
-                                grunt.log.write('>>   '.red + 'Can\'t find module '.red + fpath.grey + linefeed);
-                            }
-                        }
-                    }
-                });
-                code.push(file.code);
-                break;
-            case '*':
-                code = combine(file.code, options, true).reverse();
-                break;
-            default:
-                code.push(file.code);
-                break;
-        }
 
         // merger result
         var merger = {
             compressor: {
-                id: iduri.appendext(meta.id)
+                src: src
             },
             uncompressor: {
-                id: iduri.appendext(meta.id + '-debug')
+                src: src.replace(/\.js$/, '-debug.js')
             }
         };
+
+        // meta is require, if not, the file not a cmd module, only copy it
+        if (meta) {
+            if (!meta.id) {
+                // module has no module id, it will not work online, return it
+                grunt.log.write('>>   '.red + 'Module '.red + fpath.grey + ' has no module id'.red + linefeed);
+                return false;
+            }
+            // concat
+            switch (options.include) {
+                case '.':
+                    meta.dependencies.forEach(function(id) {
+                        if (id.charAt(0) === '.') {
+                            id = iduri.absolute(meta.id, id);
+                            if (excludes.indexOf(id) === -1 && id !== meta.id) {
+                                var fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(id)));
+                                if (grunt.file.exists(fpath)) {
+                                    code.push(grunt.file.read(fpath));
+                                } else {
+                                    grunt.log.write('>>   '.red + 'Can not find module '.red + fpath.grey + linefeed);
+                                }
+                            }
+                        }
+                    });
+                    code.push(file.code);
+                    break;
+                case '*':
+                    code = combine(file.code, options, true).reverse();
+                    break;
+                default:
+                    code.push(file.code);
+                    break;
+            }
+        } else {
+            // not a cmd module
+            code.push(code);
+        }
 
         // get merger code
         merger.compressor.code = merger.uncompressor.code = code.join(linefeed);
         // scurce map name
-        var sourcemapName = merger.compressor.id.split('/').pop() + '.map';
+        var sourcemapName = iduri.basename(merger.compressor.src) + '.map';
         // create minify file
         grunt.log.write('>>   '.green + 'Compressoring script '.cyan + linefeed);
         var compressorAst = compressor(merger.compressor.code, sourcemapName);
@@ -138,8 +151,8 @@ exports.init = function(grunt) {
         grunt.log.write('>>   '.green + 'Createing script sourcemap '.cyan + linefeed);
         // sourcemap info
         merger.sourcemap = {
-            id: iduri.join(iduri.dirname(merger.compressor.id), sourcemapName),
-            code: fixSourcemap(compressorAst.map, merger.compressor.id)
+            src: iduri.join(iduri.dirname(merger.compressor.src), sourcemapName),
+            code: fixSourcemap(compressorAst.map, merger.compressor.src)
         };
         grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
         // create debug file

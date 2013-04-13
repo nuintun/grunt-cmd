@@ -29,7 +29,7 @@ exports.init = function(grunt) {
 
     // css concat
     exports.cssConcat = function(file, options) {
-        var fpath = normalize(file.src);
+        var src = normalize(path.relative(path.join(options.librarys, options.root), file.src));
         var code = file.code;
         var meta = css.parse(code)[0];
         var id = meta.id;
@@ -131,14 +131,14 @@ exports.init = function(grunt) {
             });
         }
 
-        // concat info
-        var concat = {
+        // merger info
+        var merger = {
             compressor: {
-                id: /\.css$/.test(id) ? id : id + '.css',
+                src: src,
                 code: []
             },
             uncompressor: {
-                id: /\.css$/.test(id) ? id.replace(/\.css$/, '-debug.css') : id + '-debug.css',
+                src: src.replace(/\.css$/, '-debug.css'),
                 code: []
             }
         };
@@ -146,15 +146,15 @@ exports.init = function(grunt) {
         // css code
         code = getCode();
         // compressor code
-        concat.compressor.code.push(format('/*! define %s */', concat.compressor.id), code);
-        concat.compressor.code = concat.compressor.code.join(linefeed);
+        merger.compressor.code.push(format('/*! define %s */', merger.compressor.src), code);
+        merger.compressor.code = merger.compressor.code.join(linefeed);
         grunt.log.write('>>   '.green + 'Compressoring css '.cyan + linefeed);
-        concat.compressor.code = compressor(concat.compressor.code);
+        merger.compressor.code = compressor(merger.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor css success'.cyan + ' ...').ok();
-        // uncompressor content
-        concat.uncompressor.code.push(format('/*! define %s */', concat.uncompressor.id), code);
-        concat.uncompressor.code = concat.uncompressor.code.join(linefeed);
-        return concat;
+        // create debug file
+        merger.uncompressor.code.push(format('/*! define %s */', merger.uncompressor.src), code);
+        merger.uncompressor.code = merger.uncompressor.code.join(linefeed);
+        return merger;
     };
 
     return exports;
