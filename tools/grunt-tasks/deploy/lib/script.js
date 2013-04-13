@@ -148,7 +148,7 @@ exports.init = function(grunt) {
         grunt.log.write('>>   '.green + 'Compressor script success'.cyan + ' ...').ok();
         merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' + sourcemapName;
         // create source map
-        grunt.log.write('>>   '.green + 'Createing script sourcemap '.cyan + linefeed);
+        grunt.log.write('>>   '.green + 'Creating script sourcemap '.cyan + linefeed);
         // sourcemap info
         merger.sourcemap = {
             src: iduri.join(iduri.dirname(merger.compressor.src), sourcemapName),
@@ -156,7 +156,7 @@ exports.init = function(grunt) {
         };
         grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
         // create debug file
-        grunt.log.write('>>   '.green + 'Createing debug script '.cyan + linefeed);
+        grunt.log.write('>>   '.green + 'Creating debug script '.cyan + linefeed);
         merger.uncompressor.code = modify(merger.uncompressor.code);
         grunt.log.write('>>   '.green + 'Create debug script success'.cyan + ' ...').ok();
         // return merger result
