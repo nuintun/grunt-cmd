@@ -36,9 +36,9 @@ exports.init = function(grunt) {
         grunt.log.write(deps.length ?
             '>>   '.green + 'Dependencies : '.green 
             + '['.grey + linefeed + '>>   '.green + '   ' 
-            + normalize(deps.map(function(deps) {
-                return deps.green;
-            }).join(' ,'.grey + linefeed + '>>   '.green + '   ')) 
+            + deps.map(function(deps) {
+                return normalize(deps).green;
+            }).join(' ,'.grey + linefeed + '>>   '.green + '   ') 
             + linefeed + '>>   '.green + ']'.grey + linefeed :
             '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed);
         // modify js file
