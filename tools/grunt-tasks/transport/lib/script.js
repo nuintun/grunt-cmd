@@ -2,7 +2,7 @@
  * transport script helper
  * author : Newton
  **/
-exports.init = function (grunt){
+exports.init = function(grunt) {
     var exports = {};
     var path = require('path');
     var ast = require('../../cmd-util').ast;
@@ -10,12 +10,12 @@ exports.init = function (grunt){
     var linefeed = grunt.util.linefeed;
 
     // normalize uri to linux format
-    function normalize(uri){
+    function normalize(uri) {
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // exports
-    exports.jsParser = function (file, options){
+    exports.jsParser = function(file, options) {
         // file content
         var fpath = normalize(file.src);
         var dest = normalize(file.dest);
@@ -34,17 +34,15 @@ exports.init = function (grunt){
         // deps
         var deps = moduleDependencies(meta, options);
         grunt.log.write(deps.length ?
-            '>>   '.green + 'Dependencies : '.green + '['.grey + linefeed + '>>   '.green + '   '
-                + normalize(deps.map(function (deps){
-                return deps.green;
-            }).join(' ,'.grey + linefeed + '>>   '.green + '   ')) + linefeed + '>>   '.green + ']'.grey + linefeed :
-            '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed
-        );
+            '>>   '.green + 'Dependencies : '.green + '['.grey + linefeed + '>>   '.green + '   ' + normalize(deps.map(function(deps) {
+            return deps.green;
+        }).join(' ,'.grey + linefeed + '>>   '.green + '   ')) + linefeed + '>>   '.green + ']'.grey + linefeed :
+            '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed);
         // modify js file
         code = ast.modify(code, {
             id: iduri.idFromPackage(options.pkg, file.name, options.format),
             dependencies: deps,
-            require: function (v){
+            require: function(v) {
                 return iduri.parseAlias(options.pkg, v);
             }
         });
@@ -55,17 +53,17 @@ exports.init = function (grunt){
         }));
     };
 
-    //helpers
-    function moduleDependencies(meta, options){
+    // helpers
+    function moduleDependencies(meta, options) {
         var deps = [];
-        meta.dependencies.forEach(function (id){
-            if(iduri.isAlias(options.pkg, id)){
+        meta.dependencies.forEach(function(id) {
+            if (iduri.isAlias(options.pkg, id)) {
                 deps.push(iduri.parseAlias(options.pkg, id));
-            }else{
+            } else {
                 deps.push(id);
                 if (id.charAt(0) !== '.') {
                     grunt.log.write('>>   '.red + 'Alias '.red + id.green + ' not defined'.red + linefeed);
-                }             
+                }
             }
         });
         return deps;

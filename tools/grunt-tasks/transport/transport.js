@@ -2,7 +2,7 @@
  * transport task
  * author : Newton
  **/
-module.exports = function (grunt){
+module.exports = function(grunt) {
     var path = require('path');
     var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
@@ -14,21 +14,21 @@ module.exports = function (grunt){
     };
 
     // normalize uri to linux format
-    function normalize(uri){
+    function normalize(uri) {
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // string regexp
-    function sourceRegx(source){
+    function sourceRegx(source) {
         var imp = /[\^\.\\\|\(\)\*\+\-\$\[\]\?]/igm;
-        source = source.replace(imp, function (match){
+        source = source.replace(imp, function(match) {
             return '\\' + match;
         });
         return new RegExp(source, 'i');
     }
 
     // registerMultiTask
-    grunt.registerMultiTask('transport', 'Transport everything into cmd.', function (){
+    grunt.registerMultiTask('transport', 'Transport everything into cmd.', function() {
         // config
         var options = this.options({
             // librarys
@@ -45,7 +45,7 @@ module.exports = function (grunt){
             process: false
         });
 
-        this.files.forEach(function (file){
+        this.files.forEach(function(file) {
             // set librarys dir
             options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
             // set librarys dir
@@ -53,7 +53,7 @@ module.exports = function (grunt){
             // if donot set cwd warn it
             if (!file.cwd) return grunt.log.write('>> '.red + 'Please set cwd'.red);
             // for each files
-            file.src.forEach(function (fpath){
+            file.src.forEach(function(fpath) {
                 // format fpath
                 fpath = normalize(fpath);
                 // file source
@@ -80,13 +80,12 @@ module.exports = function (grunt){
                 }
                 // set dest file
                 var dest = normalize(path.join(
-                    options.librarys,
-                    options.root,
-                    options.pkg.family,
-                    options.pkg.name,
-                    options.pkg.version,
-                    fname
-                ));
+                options.librarys,
+                options.root,
+                options.pkg.family,
+                options.pkg.name,
+                options.pkg.version,
+                fname));
                 // if not has fileparsers copy file
                 if (!fileparsers) {
                     // copy file

@@ -2,7 +2,7 @@
  * deploy task
  * author : Newton
  **/
-module.exports = function (grunt){
+module.exports = function(grunt) {
     var path = require('path');
     var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
@@ -13,12 +13,12 @@ module.exports = function (grunt){
     };
 
     // normalize uri to linux format
-    function normalize(uri){
+    function normalize(uri) {
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // registerMultiTask
-    grunt.registerMultiTask('deploy', 'deploy cmd modules.', function (){
+    grunt.registerMultiTask('deploy', 'deploy cmd modules.', function() {
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({
             librarys: '.librarys',
@@ -27,8 +27,8 @@ module.exports = function (grunt){
             banner: '/** cmd-build author: Newton email: yongmiui@gmail.com **/'
         });
 
-        this.files.forEach(function (file){
-            file.src.forEach(function (fpath){
+        this.files.forEach(function(file) {
+            file.src.forEach(function(fpath) {
                 fpath = normalize(fpath);
                 // reset records
                 grunt.option('concat-records', {});
@@ -60,29 +60,32 @@ module.exports = function (grunt){
                     grunt.file.copy(fpath, dest);
                     return grunt.log.write('>> '.green + 'Copy '.cyan + dest.grey + ' ...').ok();
                 }
-                // start concat
+                // start merger
                 grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + linefeed);
-                // concat file start
-                var concat = parsers[extname]({ src: fpath }, options);
-                // concat fail
-                if (!concat) return;
+                // merger file start
+                var merger = parsers[extname]({
+                    src: fpath,
+                    code: grunt.file.read(fpath)
+                }, options);
+                // merger fail
+                if (!merger) return;
                 // banner
                 var banner = grunt.util._.isString(options.banner) ? options.banner : '';
                 banner = banner.trim();
                 banner = banner ? banner + linefeed : banner;
-                // compressor file
-                dest = normalize(path.join(options.output, concat.compressor.id));
-                grunt.file.write(dest, banner + concat.compressor.code);
+                // minify file
+                dest = normalize(path.join(options.output, merger.compressor.id));
+                grunt.file.write(dest, banner + merger.compressor.code);
                 grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
-                // compressor mapping, for the online debug, now chrome support sourcemap
-                if (concat.sourcemap) {
-                    dest = normalize(path.join(options.output, concat.sourcemap.id));
-                    grunt.file.write(dest, concat.sourcemap.code);
+                // source map, for the online debug, now chrome support sourcemap
+                if (merger.sourcemap) {
+                    dest = normalize(path.join(options.output, merger.sourcemap.id));
+                    grunt.file.write(dest, merger.sourcemap.code);
                     grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
                 }
-                // uncompressor file
-                dest = normalize(path.join(options.output, concat.uncompressor.id));
-                grunt.file.write(dest, banner + concat.uncompressor.code);
+                // debug file
+                dest = normalize(path.join(options.output, merger.uncompressor.id));
+                grunt.file.write(dest, banner + merger.uncompressor.code);
                 grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
             });
         });
