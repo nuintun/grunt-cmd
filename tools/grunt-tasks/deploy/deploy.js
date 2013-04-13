@@ -18,7 +18,7 @@ module.exports = function(grunt) {
     }
 
     // registerMultiTask
-    grunt.registerMultiTask('deploy', 'deploy cmd modules.', function() {
+    grunt.registerMultiTask('deploy', 'Deploy cmd modules.', function() {
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({
             librarys: '.librarys',
