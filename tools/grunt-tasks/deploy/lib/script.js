@@ -140,18 +140,17 @@ exports.init = function(grunt) {
 
         // get merger code
         merger.compressor.code = merger.uncompressor.code = code.join(linefeed);
-        // scurce map name
-        var sourcemapName = iduri.basename(merger.compressor.src) + '.map';
         // create minify file
         grunt.log.write('>>   '.green + 'Compressoring script '.cyan + linefeed);
-        var compressorAst = compressor(merger.compressor.code, sourcemapName);
+        var compressorAst = compressor(merger.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor script success'.cyan + ' ...').ok();
-        merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' + sourcemapName;
+        merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' 
+            + iduri.basename(merger.compressor.src) + '.map'; 
         // create source map
         grunt.log.write('>>   '.green + 'Creating script sourcemap '.cyan + linefeed);
         // sourcemap info
         merger.sourcemap = {
-            src: iduri.join(iduri.dirname(merger.compressor.src), sourcemapName),
+            src: merger.compressor.src + '.map',
             code: fixSourcemap(compressorAst.map, merger.compressor.src)
         };
         grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
