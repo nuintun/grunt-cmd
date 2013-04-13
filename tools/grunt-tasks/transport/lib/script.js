@@ -34,9 +34,11 @@ exports.init = function(grunt) {
         // deps
         var deps = moduleDependencies(meta, options);
         grunt.log.write(deps.length ?
-            '>>   '.green + 'Dependencies : '.green + '['.grey + linefeed + '>>   '.green + '   ' + normalize(deps.map(function(deps) {
-            return deps.green;
-        }).join(' ,'.grey + linefeed + '>>   '.green + '   ')) + linefeed + '>>   '.green + ']'.grey + linefeed :
+            '>>   '.green + 'Dependencies : '.green + '['.grey + linefeed + 
+            '>>   '.green + '   ' + normalize(deps.map(function(deps) {
+                return deps.green;
+            }).join(' ,'.grey + linefeed + '>>   '.green + '   ')) + 
+            linefeed + '>>   '.green + ']'.grey + linefeed :
             '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed);
         // modify js file
         code = ast.modify(code, {
