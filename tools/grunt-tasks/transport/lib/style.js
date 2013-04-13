@@ -23,7 +23,7 @@ exports.init = function (grunt){
         // don't transport debug css files
         if (/\-debug\.css$/.test(fpath)) return;
         // transport css to js
-        var code = file.code || grunt.file.read(fpath);
+        var code = file.code;
         var id = iduri.idFromPackage(options.pkg, file.name, options.format);
 
         // format code
@@ -39,7 +39,7 @@ exports.init = function (grunt){
     exports.cssParser = function (file, options){
         var fpath = normalize(file.src);
         var dest = normalize(file.dest);
-        var code = file.code || grunt.file.read(fpath);
+        var code = file.code;
         var codeAst = css.parse(code);
 
         // file
