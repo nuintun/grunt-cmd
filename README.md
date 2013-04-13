@@ -1,1 +1,2 @@
-#cmd build and deploy with grunt
+#CMD build and deploy with grunt
+------------------------------------
