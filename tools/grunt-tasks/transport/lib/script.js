@@ -21,9 +21,8 @@ exports.init = function (grunt){
         var dest = normalize(file.dest);
         var code = file.code || grunt.file.read(fpath);
 
-        // code ast
-        var codeAst = ast.getAst(code);
-        var meta = ast.parseFirst(codeAst);
+        // code meta
+        var meta = ast.parseFirst(code);
         // meta
         if (!meta) {
             grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' not a cmd module'.red + linefeed);
