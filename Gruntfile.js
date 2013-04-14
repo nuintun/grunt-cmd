@@ -1,5 +1,5 @@
 // GruntFile
-module.exports = function (grunt){
+module.exports = function(grunt) {
     // init config
     grunt.initConfig({
         transport: {
@@ -8,72 +8,60 @@ module.exports = function (grunt){
                     root: 'script',
                     family: 'base'
                 },
-                files: [
-                    {
-                        cwd: 'script/base',
-                        src: ['**/*.js']
-                    }
-                ]
+                files: [{
+                    cwd: 'script/base',
+                    src: ['**/*.js']
+                }]
             },
             util: {
                 options: {
                     root: 'script',
                     family: 'util'
                 },
-                files: [
-                    {
-                        cwd: 'script/util',
-                        src: ['**/*.js', '**/*.swf']
-                    }
-                ]
+                files: [{
+                    cwd: 'script/util',
+                    src: ['**/*.js', '**/*.swf']
+                }]
             },
             common: {
                 options: {
                     root: 'script',
                     family: 'common'
                 },
-                files: [
-                    {
-                        cwd: 'script/common',
-                        src: ['**/*.js']
-                    }
-                ]
+                files: [{
+                    cwd: 'script/common',
+                    src: ['**/*.js']
+                }]
             },
             view: {
                 options: {
                     root: 'script',
                     family: 'view'
                 },
-                files: [
-                    {
-                        cwd: 'script/view',
-                        src: ['**/*.js']
-                    }
-                ]
+                files: [{
+                    cwd: 'script/view',
+                    src: ['**/*.js']
+                }]
             },
             css: {
                 options: {
                     root: 'style',
                     family: 'default'
                 },
-                files: [
-                    {
-                        cwd: 'style/default',
-                        src: ['**/*.css']
-                    }
-                ]
+                files: [{
+                    cwd: 'style/default',
+                    src: ['**/*.css']
+                }]
             },
             htc: {
                 options: {
                     root: 'style',
                     family: 'css3pie'
                 },
-                files: [
-                    {
-                        cwd: 'style/css3pie',
-                        src: ['**/*.htc']
-                    }
-                ]
+                files: [{
+                    cwd: 'style/css3pie',
+                    src: ['**/*.htc']
+                }]
             }
         },
         deploy: {
@@ -81,23 +69,19 @@ module.exports = function (grunt){
                 options: {
                     root: 'script'
                 },
-                files: [
-                    {
-                        cwd: '.librarys/script',
-                        src: ['**/jquery.js']
-                    }
-                ]
+                files: [{
+                    cwd: '.librarys/script',
+                    src: ['**/jquery.js']
+                }]
             },
             swf: {
                 options: {
                     root: 'script'
                 },
-                files: [
-                    {
-                        cwd: '.librarys/script',
-                        src: ['**/*.swf']
-                    }
-                ]
+                files: [{
+                    cwd: '.librarys/script',
+                    src: ['**/*.swf']
+                }]
             },
             view: {
                 options: {
@@ -105,12 +89,10 @@ module.exports = function (grunt){
                     include: '*',
                     excludes: ['base/jquery/1.9.1/jquery']
                 },
-                files: [
-                    {
-                        cwd: '.librarys/script',
-                        src: ['view/**/*.js']
-                    }
-                ]
+                files: [{
+                    cwd: '.librarys/script',
+                    src: ['view/**/*.js']
+                }]
             },
             css: {
                 options: {
@@ -118,12 +100,10 @@ module.exports = function (grunt){
                     output: 'css',
                     banner: '/** cmd-build author: Newton email: yongmiui@gmail.com date: ' + Date.now() + ' **/'
                 },
-                files: [
-                    {
-                        cwd: '.librarys/style',
-                        src: ['**/base.css', '**/index.css']
-                    }
-                ]
+                files: [{
+                    cwd: '.librarys/style',
+                    src: ['**/base.css', '**/index.css']
+                }]
             }
         },
         clean: {
