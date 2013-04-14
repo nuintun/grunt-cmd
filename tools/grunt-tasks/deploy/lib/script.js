@@ -59,7 +59,7 @@ exports.init = function(grunt) {
             // file path, if set fromstr, fpath equal code
             fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(fpath)));
             // cache readed file, prevent an circle loop, optimize efficiency        
-            if (records[fpath]) return stack;
+            if (records[fpath]) return;
             records[fpath] = true;
             // file not existe
             if (!grunt.file.exists(fpath)) {
@@ -71,7 +71,6 @@ exports.init = function(grunt) {
             var meta = ast.parseFirst(code);
 
             if (meta) {
-
                 if (meta.id) {
                     // loop dependencies modules
                     meta.dependencies.forEach(function(id) {
@@ -90,8 +89,8 @@ exports.init = function(grunt) {
                 }
             }
 
-            // unshift code to the first stack
-            stack.unshift(code);
+            // push code to the first stack
+            stack.push(code);
         }
 
         // start deep combine
