@@ -29,8 +29,8 @@ exports.init = function(grunt) {
 
     // css concat
     exports.cssConcat = function(file, options) {
-        var src = normalize(path.relative(path.join(options.librarys, options.root), file.src));
-        var code = file.code;
+        var fpath = normalize(path.join(options.librarys, options.root, file.src));
+        var code = grunt.file.read(fpath);
         var meta = css.parse(code)[0];
         var id = meta.id;
         var records = grunt.option('concat-records');
@@ -130,15 +130,16 @@ exports.init = function(grunt) {
                 return node;
             });
         }
-
+        // output file path relative the online resource root
+        var output = normalize(path.relative(path.join(options.librarys, options.root), file.src));
         // merger info
         var merger = {
             compressor: {
-                src: src,
+                output: output,
                 code: []
             },
             uncompressor: {
-                src: src.replace(/\.css$/, '-debug.css'),
+                output: output.replace(/\.css$/, '-debug.css'),
                 code: []
             }
         };
@@ -147,13 +148,13 @@ exports.init = function(grunt) {
         code = getCode();
         // compressor code
         grunt.log.write('>>   '.green + 'Compressoring css '.cyan + linefeed);
-        merger.compressor.code.push(format('/*! define %s */', merger.compressor.src), code);
+        merger.compressor.code.push(format('/*! define %s */', merger.compressor.output), code);
         merger.compressor.code = merger.compressor.code.join(linefeed);
         merger.compressor.code = compressor(merger.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor css success'.cyan + ' ...').ok();
         // create debug file
         grunt.log.write('>>   '.green + 'Creating debug css '.cyan + linefeed);
-        merger.uncompressor.code.push(format('/*! define %s */', merger.uncompressor.src), code);
+        merger.uncompressor.code.push(format('/*! define %s */', merger.uncompressor.output), code);
         merger.uncompressor.code = merger.uncompressor.code.join(linefeed);
         grunt.log.write('>>   '.green + 'Create debug css success'.cyan + ' ...').ok();
         return merger;

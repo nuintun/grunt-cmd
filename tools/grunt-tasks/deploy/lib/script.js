@@ -30,7 +30,7 @@ exports.init = function(grunt) {
         });
     }
 
-    // minify
+    // compressor code
     function compressor(code) {
         return UglifyJS.minify(code, {
             outSourceMap: '{{file}}',
@@ -50,108 +50,124 @@ exports.init = function(grunt) {
     // combine, not include the excludes file
     // default read file from fpath, but you can set from code string by set fromstr args
     function combine(fpath, options, fromstr) {
-        var merger = [];
-        // file path, if set fromstr, fpath equal code
-        fpath = fromstr ? fpath : normalize(path.join(options.librarys, options.root, iduri.appendext(fpath)));
-        // file not existe
-        if (!fromstr && !grunt.file.exists(fpath)) {
-            grunt.log.write('>>   '.red + 'Can\'t find module '.red + fpath.grey + linefeed);
-            return merger;
-        }
-        // deps, excludes, records, code, meta      
-        var code = fromstr ? fpath : grunt.file.read(fpath);
-        var meta = ast.parseFirst(code);
+        var stack = [];
         var excludes = options.excludes;
-        // cache readed file, prevent an circle loop, optimize efficiency
         var records = grunt.option('concat-records');
 
-        if (records[meta.id]) return merger;
-        records[meta.id] = meta.id;
-        merger.push(code);
-
-        meta.dependencies.forEach(function(id) {
-            // relative require
-            if (id.charAt(0) === '.') {
-                id = iduri.absolute(meta.id, id);
+        // deep combine helper
+        function loop(fpath, options) {
+            // file path, if set fromstr, fpath equal code
+            fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(fpath)));
+            // cache readed file, prevent an circle loop, optimize efficiency        
+            if (records[fpath]) return stack;
+            records[fpath] = true;
+            // file not existe
+            if (!grunt.file.exists(fpath)) {
+                grunt.log.write('>>   '.red + 'Can not find module '.red + fpath.grey + linefeed);
+                return stack;
             }
-            // deep combine
-            if (!records[id] && id !== meta.id && excludes.indexOf(id) === -1 && /\.js$/.test(iduri.appendext(id))) {
-                merger = merger.concat(combine(id, options));
-            }
-        });
+            // deps, excludes, records, code, meta      
+            var code = grunt.file.read(fpath);
+            var meta = ast.parseFirst(code);
 
-        return merger;
+            if (meta) {
+
+                if (meta.id) {
+                    // loop dependencies modules
+                    meta.dependencies.forEach(function(id) {
+                        // relative require
+                        if (id.charAt(0) === '.') {
+                            id = iduri.absolute(meta.id, id);
+                        }
+                        // deep combine
+                        if (!records[id] && id !== meta.id && excludes.indexOf(id) === -1 && /\.js$/.test(iduri.appendext(id))) {
+                            loop(id, options);
+                        }
+                    });
+                } else {
+                    // module has no module id, it will not work, return it
+                    grunt.log.write('>>   '.red + 'Module '.red + fpath.grey + ' has no module id'.red + linefeed);
+                }
+            }
+
+            // unshift code to the first stack
+            stack.unshift(code);
+        }
+
+        // start deep combine
+        loop(fpath, options);
+
+        // return stack
+        return stack;
     }
 
     // exports js concat
     exports.jsConcat = function(file, options) {
-        // code set
-        var code = [];
-        var src = normalize(path.relative(path.join(options.librarys, options.root), file.src));
+        // code stack
+        var stack = [];
         var excludes = options.excludes;
-        var meta = ast.parseFirst(file.code);
-
+        var fpath = file.src;
+        // output file path relative the online resource root
+        var output = normalize(path.relative(path.join(options.librarys, options.root), file.src));
         // merger result
         var merger = {
             compressor: {
-                src: src
+                output: output
             },
             uncompressor: {
-                src: src.replace(/\.js$/, '-debug.js')
+                output: output.replace(/\.js$/, '-debug.js')
             }
         };
 
-        // meta is require, if not, the file not a cmd module, only copy it
-        if (meta) {
-            if (!meta.id) {
-                // module has no module id, it will not work online, return it
-                grunt.log.write('>>   '.red + 'Module '.red + fpath.grey + ' has no module id'.red + linefeed);
-                return false;
-            }
-            // concat
-            switch (options.include) {
-                case '.':
-                    meta.dependencies.forEach(function(id) {
-                        if (id.charAt(0) === '.') {
-                            id = iduri.absolute(meta.id, id);
-                            if (excludes.indexOf(id) === -1 && id !== meta.id) {
-                                var fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(id)));
-                                if (grunt.file.exists(fpath)) {
-                                    code.push(grunt.file.read(fpath));
-                                } else {
-                                    grunt.log.write('>>   '.red + 'Can not find module '.red + fpath.grey + linefeed);
+        // combine
+        switch (options.include) {
+            case '.':
+                var code = grunt.file.read(fpath);
+                var meta = ast.parseFirst(code);
+                if (meta) {
+                    if (meta.id) {
+                        // include relative file
+                        meta.dependencies.forEach(function(id) {
+                            if (id.charAt(0) === '.') {
+                                id = iduri.absolute(meta.id, id);
+                                if (excludes.indexOf(id) === -1 && id !== meta.id) {
+                                    var fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(id)));
+                                    if (grunt.file.exists(fpath)) {
+                                        code.push(grunt.file.read(fpath));
+                                    } else {
+                                        grunt.log.write('>>   '.red + 'Can not find module '.red + fpath.grey + linefeed);
+                                    }
                                 }
                             }
-                        }
-                    });
-                    code.push(file.code);
-                    break;
-                case '*':
-                    code = combine(file.code, options, true).reverse();
-                    break;
-                default:
-                    code.push(file.code);
-                    break;
-            }
-        } else {
-            // not a cmd module
-            code.push(code);
+                        });
+                    } else {
+                        // module has no module id
+                        grunt.log.write('>>   '.red + 'Module '.red + fpath.grey + ' has no module id'.red + linefeed);
+                    }
+                }
+                stack.push(code);
+                break;
+            case '*':
+                stack = combine(output, options);
+                break;
+            default:
+                stack.push(grunt.file.read(fpath));
+                break;
         }
 
         // get merger code
-        merger.compressor.code = merger.uncompressor.code = code.join(linefeed);
+        merger.compressor.code = merger.uncompressor.code = stack.join(linefeed);
         // create minify file
         grunt.log.write('>>   '.green + 'Compressoring script '.cyan + linefeed);
         var compressorAst = compressor(merger.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor script success'.cyan + ' ...').ok();
-        merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' 
-            + iduri.basename(merger.compressor.src) + '.map'; 
+        merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' + iduri.basename(merger.compressor.output) + '.map';
         // create source map
         grunt.log.write('>>   '.green + 'Creating script sourcemap '.cyan + linefeed);
         // sourcemap info
         merger.sourcemap = {
-            src: merger.compressor.src + '.map',
-            code: fixSourcemap(compressorAst.map, merger.compressor.src)
+            output: merger.compressor.output + '.map',
+            code: fixSourcemap(compressorAst.map, merger.compressor.output)
         };
         grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
         // create debug file

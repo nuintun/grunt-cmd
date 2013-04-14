@@ -64,8 +64,7 @@ module.exports = function(grunt) {
                 grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + linefeed);
                 // merger file start
                 var merger = parsers[extname]({
-                    src: fpath,
-                    code: grunt.file.read(fpath)
+                    src: fpath
                 }, options);
                 // merger fail
                 if (!merger) return;
@@ -74,17 +73,17 @@ module.exports = function(grunt) {
                 banner = banner.trim();
                 banner = banner ? banner + linefeed : banner;
                 // minify file
-                dest = normalize(path.join(options.output, merger.compressor.src));
+                dest = normalize(path.join(options.output, merger.compressor.output));
                 grunt.file.write(dest, banner + merger.compressor.code);
                 grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
                 // source map, for the online debug, now chrome support sourcemap
                 if (merger.sourcemap) {
-                    dest = normalize(path.join(options.output, merger.sourcemap.src));
+                    dest = normalize(path.join(options.output, merger.sourcemap.output));
                     grunt.file.write(dest, merger.sourcemap.code);
                     grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
                 }
                 // debug file
-                dest = normalize(path.join(options.output, merger.uncompressor.src));
+                dest = normalize(path.join(options.output, merger.uncompressor.output));
                 grunt.file.write(dest, banner + merger.uncompressor.code);
                 grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
             });
