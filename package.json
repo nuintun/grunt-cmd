@@ -2,7 +2,7 @@
   "family": "cmd-grunt",
   "name": "cmd-grunt",
   "version": "1.0.0",
-  "description": "cmd transport and deploy with grunt !",
+  "description": "CMD transport and deploy with grunt !",
   "author": "Newton Niu <yongmiui@gmail.com>",
   "dependencies": {
     "grunt": "~0.4.1",
