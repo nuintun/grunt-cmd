@@ -132,18 +132,21 @@ exports.init = function(grunt) {
                             if (id.charAt(0) === '.') {
                                 id = iduri.absolute(meta.id, id);
                                 if (excludes.indexOf(id) === -1 && id !== meta.id) {
-                                    var fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(id)));
+                                    var fpath = normalize(path.join(options.librarys, 
+                                        options.root, iduri.appendext(id)));
                                     if (grunt.file.exists(fpath)) {
                                         code.push(grunt.file.read(fpath));
                                     } else {
-                                        grunt.log.write('>>   '.red + 'Can not find module : '.red + fpath.grey + ' !'.red + linefeed);
+                                        grunt.log.write('>>   '.red + 'Can not find module : '.red 
+                                            + fpath.grey + ' !'.red + linefeed);
                                     }
                                 }
                             }
                         });
                     } else {
                         // module has no module id
-                        grunt.log.write('>>   '.red + 'Module : '.red + fpath.grey + ' has no module id !'.red + linefeed);
+                        grunt.log.write('>>   '.red + 'Module : '.red + fpath.grey 
+                            + ' has no module id !'.red + linefeed);
                     }
                 }
                 stack.push(code);
@@ -162,7 +165,8 @@ exports.init = function(grunt) {
         grunt.log.write('>>   '.green + 'Compressoring script '.cyan + ' ...' + linefeed);
         var compressorAst = compressor(merger.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor script success'.cyan + ' ...').ok();
-        merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' + iduri.basename(merger.compressor.output) + '.map';
+        merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' 
+            + iduri.basename(merger.compressor.output) + '.map';
         // create source map
         grunt.log.write('>>   '.green + 'Creating script sourcemap '.cyan + ' ...' + linefeed);
         // sourcemap info
