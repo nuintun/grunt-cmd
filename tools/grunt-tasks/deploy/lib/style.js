@@ -148,13 +148,13 @@ exports.init = function(grunt) {
         // css code
         code = getCode();
         // compressor code
-        grunt.log.write('>>   '.green + 'Compressoring css '.cyan + ' ...' + linefeed);
+        grunt.log.write('>>   '.green + 'Compressoring css'.cyan + ' ...' + linefeed);
         merger.compressor.code.push(format('/*! define %s */', merger.compressor.output), code);
         merger.compressor.code = merger.compressor.code.join(linefeed);
         merger.compressor.code = compressor(merger.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor css success'.cyan + ' ...').ok();
         // create debug file
-        grunt.log.write('>>   '.green + 'Creating debug css '.cyan + ' ...' + linefeed);
+        grunt.log.write('>>   '.green + 'Creating debug css'.cyan + ' ...' + linefeed);
         merger.uncompressor.code.push(format('/*! define %s */', merger.uncompressor.output), code);
         merger.uncompressor.code = merger.uncompressor.code.join(linefeed);
         grunt.log.write('>>   '.green + 'Create debug css success'.cyan + ' ...').ok();
