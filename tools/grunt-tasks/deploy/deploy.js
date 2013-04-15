@@ -56,12 +56,12 @@ module.exports = function(grunt) {
                 var extname = path.extname(fpath);
                 // none parsers
                 if (!parsers[extname]) {
-                    grunt.log.write('>> '.green + 'Copy '.cyan + fpath.grey + linefeed);
+                    grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + ' ...' + linefeed);
                     grunt.file.copy(fpath, dest);
-                    return grunt.log.write('>> '.green + 'Copy '.cyan + dest.grey + ' ...').ok();
+                    return grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
                 }
                 // start merger
-                grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + linefeed);
+                grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + ' ...' + linefeed);
                 // merger file start
                 var merger = parsers[extname]({
                     src: fpath
