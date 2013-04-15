@@ -50,7 +50,7 @@ exports.init = function(grunt) {
                     if (!/\.css$/.test(node.id)) node.id += '.css';
                 } else {
                     if (!node.id.charAt(0) === '.') {
-                        grunt.log.write('>>   '.red + 'Alias '.red + node.id.green + ' not defined'.red + linefeed);
+                        grunt.log.write('>>   '.red + 'Alias : '.red + node.id.green + ' not defined !'.red + linefeed);
                     }
                 }
 
