@@ -37,7 +37,7 @@ exports.init = function(grunt) {
 
         // no id
         if (!id) {
-            grunt.log.write('>>   '.red + 'Require a transported file'.red + linefeed);
+            grunt.log.write('>>   '.red + 'Require a transported file !'.red + linefeed);
             return false;
         }
 
@@ -73,7 +73,7 @@ exports.init = function(grunt) {
                 if (!/\.css$/.test(fpath)) fpath += '.css';
 
                 if (!grunt.file.exists(fpath)) {
-                    grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' not found'.red + linefeed);
+                    grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not found !'.red + linefeed);
                     return false;
                 }
 
@@ -82,13 +82,14 @@ exports.init = function(grunt) {
 
                 // remove circle imports
                 if (meta.id === id) {
-                    grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' has circle dependencies'.red + linefeed);
+                    grunt.log.write('>>   '.red + 'File : '.red + fpath.grey 
+                        + ' has circle dependencies !'.red + linefeed);
                     return false;
                 }
 
                 // no meta id
                 if (!meta.id) {
-                    grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' has no defined id'.red + linefeed);
+                    grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' has no defined id !'.red + linefeed);
                 }
 
                 meta.id = node.id;
@@ -102,7 +103,7 @@ exports.init = function(grunt) {
 
             // file not exists
             if (!grunt.file.exists(fpath)) {
-                grunt.log.write('>>   '.red + 'File '.red + node.id.grey + ' not found'.red + linefeed);
+                grunt.log.write('>>   '.red + 'File : '.red + node.id.grey + ' not found !'.red + linefeed);
                 return false;
             }
 
@@ -111,7 +112,7 @@ exports.init = function(grunt) {
 
             // no meta id
             if (!meta.id) {
-                grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' has no defined id'.red + linefeed);
+                grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' has no defined id !'.red + linefeed);
             }
 
             meta.id = node.id;
@@ -147,13 +148,13 @@ exports.init = function(grunt) {
         // css code
         code = getCode();
         // compressor code
-        grunt.log.write('>>   '.green + 'Compressoring css '.cyan + linefeed);
+        grunt.log.write('>>   '.green + 'Compressoring css '.cyan + ' ...' + linefeed);
         merger.compressor.code.push(format('/*! define %s */', merger.compressor.output), code);
         merger.compressor.code = merger.compressor.code.join(linefeed);
         merger.compressor.code = compressor(merger.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor css success'.cyan + ' ...').ok();
         // create debug file
-        grunt.log.write('>>   '.green + 'Creating debug css '.cyan + linefeed);
+        grunt.log.write('>>   '.green + 'Creating debug css '.cyan + ' ...' + linefeed);
         merger.uncompressor.code.push(format('/*! define %s */', merger.uncompressor.output), code);
         merger.uncompressor.code = merger.uncompressor.code.join(linefeed);
         grunt.log.write('>>   '.green + 'Create debug css success'.cyan + ' ...').ok();
