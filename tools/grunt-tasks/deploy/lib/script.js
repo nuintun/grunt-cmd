@@ -79,7 +79,9 @@ exports.init = function(grunt) {
                             id = iduri.absolute(meta.id, id);
                         }
                         // deep combine
-                        if (!records[id] && id !== meta.id && excludes.indexOf(id) === -1 && /\.js$/.test(iduri.appendext(id))) {
+                        if (!records[id] && id !== meta.id 
+                            && excludes.indexOf(id) === -1 
+                            && /\.js$/.test(iduri.appendext(id))) {
                             loop(id, options);
                         }
                     });
