@@ -25,10 +25,10 @@ exports.init = function(grunt) {
         var meta = ast.parseFirst(code);
         // meta
         if (!meta) {
-            grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' not a cmd module'.red + linefeed);
+            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not a cmd module !'.red + linefeed);
             return grunt.file.copy(fpath, dest);
         } else if (meta.id) {
-            grunt.log.write('>>   '.red + 'File '.red + fpath.grey + ' found module id'.red + linefeed);
+            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' found module id !'.red + linefeed);
             return grunt.file.copy(fpath, dest);
         }
         // deps
@@ -65,7 +65,7 @@ exports.init = function(grunt) {
             } else {
                 deps.push(id);
                 if (id.charAt(0) !== '.') {
-                    grunt.log.write('>>   '.red + 'Alias '.red + id.green + ' not defined'.red + linefeed);
+                    grunt.log.write('>>   '.red + 'Alias : '.red + id.green + ' not defined !'.red + linefeed);
                 }
             }
         });
