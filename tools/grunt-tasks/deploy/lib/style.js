@@ -49,6 +49,7 @@ exports.init = function(grunt) {
         // check import
         function hasImport() {
             var hasImport = false;
+            meta = css.parse(code)[0];
             code = css.stringify(meta.code, function(node) {
                 if (node.type === 'import' && node.id) {
                     hasImport = true;
@@ -122,11 +123,12 @@ exports.init = function(grunt) {
             meta = css.parse(code)[0];
             return css.stringify(meta.code, function(node) {
                 if (node.id && records[node.id]) return false;
-                if (!node.id) return false;
+                if (node.id) {
                 if (node.id.charAt(0) === '.') node.id = iduri.absolute(id, node.id);
-                if (records[node.id]) return false;
-                records[node.id] = node.id;
-                return node;
+                    if (records[node.id]) return false;
+                    records[node.id] = node.id;
+                    return node;
+                }
             });
         }
         // output file path relative the online resource root
