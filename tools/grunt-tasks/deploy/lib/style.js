@@ -122,9 +122,8 @@ exports.init = function(grunt) {
         function getCode() {
             meta = css.parse(code)[0];
             return css.stringify(meta.code, function(node) {
-                if (node.id && records[node.id]) return false;
                 if (node.id) {
-                if (node.id.charAt(0) === '.') node.id = iduri.absolute(id, node.id);
+                    if (node.id.charAt(0) === '.') node.id = iduri.absolute(id, node.id);
                     if (records[node.id]) return false;
                     records[node.id] = node.id;
                     return node;
