@@ -89,9 +89,9 @@ module.exports = function(grunt) {
                 // if not has fileparsers copy file
                 if (!fileparsers) {
                     // copy file
-                    grunt.log.write('>> '.green + 'Copy '.cyan + fpath.grey + linefeed);
+                    grunt.log.write('>> '.green + 'Transporting '.cyan + fpath.grey + linefeed);
                     grunt.file.copy(fpath, dest);
-                    return grunt.log.write('>> '.green + 'Copy to '.cyan + dest.grey + ' ...').ok();
+                    return grunt.log.write('>> '.green + 'Transport '.cyan + dest.grey + ' ...').ok();
                 }
                 // code
                 var code = grunt.file.read(fpath);
