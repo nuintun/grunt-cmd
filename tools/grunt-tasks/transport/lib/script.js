@@ -37,7 +37,7 @@ exports.init = function(grunt) {
             '>>   '.green + 'Dependencies : '.green 
             + '['.grey + linefeed + '>>   '.green + '   ' 
             + deps.map(function(deps) {
-                return normalize(deps).green;
+                return deps.replace(/\\/g, '/').green;
             }).join(' ,'.grey + linefeed + '>>   '.green + '   ') 
             + linefeed + '>>   '.green + ']'.grey + linefeed :
             '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed);
