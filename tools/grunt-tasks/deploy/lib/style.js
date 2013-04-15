@@ -29,8 +29,7 @@ exports.init = function(grunt) {
 
     // css concat
     exports.cssConcat = function(file, options) {
-        var fpath = normalize(path.join(options.librarys, options.root, file.src));
-        var code = grunt.file.read(fpath);
+        var code = grunt.file.read(file.src);
         var meta = css.parse(code)[0];
         var id = meta.id;
         var records = grunt.option('concat-records');
@@ -120,7 +119,7 @@ exports.init = function(grunt) {
 
         // get css code string
         function getCode() {
-            meta = css.parse(meta)[0];
+            meta = css.parse(code)[0];
             return css.stringify(meta.code, function(node) {
                 if (node.id && records[node.id]) return false;
                 if (!node.id) return false;
