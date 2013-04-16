@@ -132,7 +132,7 @@ exports.idFromPackage = function(pkg, filename, format) {
         filename = pkg.filename || '';
     }
     if (filename.charAt(0) === '.') {
-        return normalize(filename.replace(/\.js$/, ''));
+        return filename.replace(/\.js$/, '');
     }
     format = format || '{{family}}/{{name}}/{{version}}/{{filename}}';
     var data = pkg;
