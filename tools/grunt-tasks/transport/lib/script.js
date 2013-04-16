@@ -11,7 +11,9 @@ exports.init = function(grunt) {
 
     // normalize uri to linux format
     function normalize(uri) {
-        return path.normalize(uri).replace(/\\/g, '/');
+        var isCurDir = /^\.[/\\]+/.test(uri);
+        uri = path.normalize(uri).replace(/\\/g, '/');
+        return !isCurDir || (isCurDir && uri.charAt(0) === '.') ? uri : './' + uri;
     }
 
     // exports
@@ -37,7 +39,7 @@ exports.init = function(grunt) {
             '>>   '.green + 'Dependencies : '.green 
             + '['.grey + linefeed + '>>   '.green + '   ' 
             + deps.map(function(deps) {
-                return deps.replace(/\\/g, '/').green;
+                return normalize(deps).green;
             }).join(' ,'.grey + linefeed + '>>   '.green + '   ') 
             + linefeed + '>>   '.green + ']'.grey + linefeed :
             '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed);
