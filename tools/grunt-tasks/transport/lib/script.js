@@ -11,9 +11,7 @@ exports.init = function(grunt) {
 
     // normalize uri to linux format
     function normalize(uri) {
-        var isCurDir = /^\.[/\\]+/.test(uri);
-        uri = path.normalize(uri).replace(/\\/g, '/');
-        return !isCurDir || (isCurDir && uri.charAt(0) === '.') ? uri : './' + uri;
+        return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // exports
@@ -39,7 +37,7 @@ exports.init = function(grunt) {
             '>>   '.green + 'Dependencies : '.green 
             + '['.grey + linefeed + '>>   '.green + '   ' 
             + deps.map(function(deps) {
-                return normalize(deps).green;
+                return deps.green;
             }).join(' ,'.grey + linefeed + '>>   '.green + '   ') 
             + linefeed + '>>   '.green + ']'.grey + linefeed :
             '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed);
@@ -65,7 +63,7 @@ exports.init = function(grunt) {
             if (iduri.isAlias(options.pkg, id)) {
                 deps.push(iduri.parseAlias(options.pkg, id));
             } else {
-                deps.push(id);
+                deps.push(iduri.normalize(id));
                 if (id.charAt(0) !== '.') {
                     grunt.log.write('>>   '.red + 'Alias : '.red + id.green + ' not defined !'.red + linefeed);
                 }
