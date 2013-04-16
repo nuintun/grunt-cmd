@@ -13,9 +13,7 @@ exports.init = function(grunt) {
 
     // normalize uri to linux format
     function normalize(uri) {
-        var isCurDir = /^\.[/\\]+/.test(uri);
-        uri = path.normalize(uri).replace(/\\/g, '/');
-        return !isCurDir || (isCurDir && uri.charAt(0) === '.') ? uri : './' + uri;
+        return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // css to js parser
