@@ -40,7 +40,9 @@ exports.resolve = function(uri) {
 // make sure the uri to be pretty,
 // for example a//b/../c should be a/c.
 function normalize(uri) {
+    var isCurDir = /^\.[/\\]+/.test(uri);
     uri = path.normalize(uri).replace(/\\/g, '/');
+    uri =  !isCurDir || (isCurDir && uri.charAt(0) === '.') ? uri : './' + uri;
     var lastChar = uri.charAt(uri.length - 1);
     if (lastChar === '/') return uri;
     // if it ends with #, we should return the uri without #
@@ -57,7 +59,7 @@ exports.normalize = normalize;
 exports.relative = function(base, uri) {
     if (uri.charAt(0) === '/') return uri;
 
-    var bits = normalize(base).split('/');
+    var bits = normalize(base).replace(/^\.[/\\]+/, '').split('/');
     var dots = [];
     if (bits.length > 1) {
         bits.forEach(function() {
@@ -73,13 +75,13 @@ exports.relative = function(base, uri) {
 // uri is `./base`
 // the result should be `arale/base/1.0.0/base`
 exports.absolute = function(base, uri) {
-    if (uri.charAt(0) !== '.') return uri;
+    if (uri.charAt(0) !== '.') return normalize(uri);
     uri = path.join(path.dirname(base), uri);
-    return exports.normalize(uri);
+    return normalize(uri);
 };
 
 exports.join = function() {
-    return path.join.apply(path, arguments).replace(/\\/g, '/');
+    return normalize(path.join.apply(path, arguments).replace(/\\/g, '/'));
 };
 
 exports.dirname = function(uri) {
@@ -101,19 +103,19 @@ exports.extname = function(uri) {
 exports.appendext = function(uri) {
     var ext = path.extname(uri);
     if (!ext) return uri + '.js';
-    return uri;
+    return normalize(uri);
 };
 
 exports.parseAlias = function(pkg, name) {
     // relative name: ./class
     if (name.charAt(0) === '.') {
-        return name.replace(/\.js$/, '');
+        name = name.replace(/\.js$/, '');
     }
     var alias = getAlias(pkg);
     if (alias.hasOwnProperty(name)) {
-        return alias[name];
+        name = alias[name];
     }
-    return name;
+    return normalize(name);
 };
 
 exports.isAlias = function(pkg, name) {
@@ -130,7 +132,7 @@ exports.idFromPackage = function(pkg, filename, format) {
         filename = pkg.filename || '';
     }
     if (filename.charAt(0) === '.') {
-        return filename.replace(/\.js$/, '');
+        return normalize(filename.replace(/\.js$/, ''));
     }
     format = format || '{{family}}/{{name}}/{{version}}/{{filename}}';
     var data = pkg;
