@@ -66,7 +66,7 @@ module.exports = function(grunt) {
                 // file name
                 var fname = path.basename(fpath);
                 // extname
-                var extname = path.extname(fname);
+                var extname = path.extname(fname).toLowerCase();
                 // find fileparsers
                 var fileparsers = parsers[extname];
                 // set family name version
@@ -80,12 +80,13 @@ module.exports = function(grunt) {
                 }
                 // set dest file
                 var dest = normalize(path.join(
-                options.librarys,
-                options.root,
-                options.pkg.family,
-                options.pkg.name,
-                options.pkg.version,
-                fname));
+                    options.librarys,
+                    options.root,
+                    options.pkg.family,
+                    options.pkg.name,
+                    options.pkg.version,
+                    fname
+                ));
                 // if not has fileparsers copy file
                 if (!fileparsers) {
                     // copy file
