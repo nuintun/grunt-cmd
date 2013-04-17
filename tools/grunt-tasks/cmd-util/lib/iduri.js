@@ -85,13 +85,11 @@ exports.join = function() {
 };
 
 exports.dirname = function(uri) {
-    uri = path.dirname(uri);
-    return normalize(uri);
+    return normalize(path.dirname(uri));
 };
 
 exports.basename = function(uri) {
-    var basename = path.basename(uri);
-    return normalize(basename);
+    return path.basename(uri);
 };
 
 exports.extname = function(uri) {
@@ -102,7 +100,7 @@ exports.extname = function(uri) {
 
 exports.appendext = function(uri) {
     var ext = path.extname(uri);
-    if (!ext) return uri + '.js';
+    if (!ext) normalize(uri + '.js');
     return normalize(uri);
 };
 
