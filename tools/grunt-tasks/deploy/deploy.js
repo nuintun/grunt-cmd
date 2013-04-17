@@ -53,7 +53,7 @@ module.exports = function(grunt) {
                     return grunt.log.write('>> '.red + 'File '.red + fpath.grey + ' not found'.red + linefeed);
                 }
                 // extname
-                var extname = path.extname(fpath);
+                var extname = path.extname(fpath).toLowerCase();
                 // none parsers
                 if (!parsers[extname]) {
                     grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + ' ...' + linefeed);
