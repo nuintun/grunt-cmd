@@ -42,7 +42,7 @@ exports.init = function(grunt) {
     // fix sourcemap
     function fixSourcemap(code, file) {
         var mini = iduri.basename(file);
-        var full = mini.replace(/\.js$/, '-debug.js');
+        var full = mini.replace(/\.js$/i, '-debug.js');
         return code.replace('"file":"{{file}}"', '"file":"' + mini + '"')
             .replace('"sources":["?"]', '"sources":["' + full + '"]');
     }
@@ -81,7 +81,7 @@ exports.init = function(grunt) {
                         // deep combine
                         if (!records[id] && id !== meta.id 
                             && excludes.indexOf(id) === -1 
-                            && /\.js$/.test(iduri.appendext(id))) {
+                            && /\.js$/i.test(iduri.appendext(id))) {
                             loop(id, options);
                         }
                     });
