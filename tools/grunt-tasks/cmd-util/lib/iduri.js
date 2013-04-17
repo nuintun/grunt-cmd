@@ -57,18 +57,18 @@ exports.normalize = normalize;
 // if base is `path/to/a', uri is `static/a.js`
 // relative is: ../../../static/a.js
 exports.relative = function(base, uri) {
-    if (uri.charAt(0) === '/') return uri;
+    if (uri.charAt(0) === '/') return normalize(uri);
 
-    var bits = normalize(base).replace(/^\.[/\\]+/, '').split('/');
+    var bits = base.replace(/^\.[/\\]+/, '').split('/');
     var dots = [];
     if (bits.length > 1) {
         bits.forEach(function() {
             dots.push('..');
         });
         dots.pop();
-        return dots.join('/') + '/' + uri;
+        return normalize(dots.join('/') + '/' + uri);
     }
-    return uri;
+    return normalize(uri);
 };
 
 // base is `arale/base/1.0.0/parser`
@@ -86,12 +86,12 @@ exports.join = function() {
 
 exports.dirname = function(uri) {
     uri = path.dirname(uri);
-    return uri.replace(/\\/g, '/');
+    return normalize(uri);
 };
 
 exports.basename = function(uri) {
     var basename = path.basename(uri);
-    return basename.replace(/\\/g, '/');
+    return normalize(basename);
 };
 
 exports.extname = function(uri) {
