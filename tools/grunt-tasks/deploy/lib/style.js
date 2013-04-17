@@ -140,7 +140,7 @@ exports.init = function(grunt) {
                 code: []
             },
             uncompressor: {
-                output: output.replace(/\.css$/, '-debug.css'),
+                output: output.replace(/\.css$/i, '-debug.css'),
                 code: []
             }
         };
