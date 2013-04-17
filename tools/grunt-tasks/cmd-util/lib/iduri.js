@@ -99,7 +99,7 @@ exports.extname = function(uri) {
 
 exports.appendext = function(uri) {
     var ext = path.extname(uri);
-    if (!ext) normalize(uri + '.js');
+    if (!ext) return normalize(uri + '.js');
     return normalize(uri);
 };
 
