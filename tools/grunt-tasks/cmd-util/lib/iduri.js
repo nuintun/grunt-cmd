@@ -59,13 +59,12 @@ exports.normalize = normalize;
 exports.relative = function(base, uri) {
     if (uri.charAt(0) === '/') return normalize(uri);
 
-    var bits = base.replace(/^\.[/\\]+/, '').split('/');
+    var bits = normalize(base.replace(/^\.[/\\]+/, '')).split('/');
     var dots = [];
     if (bits.length > 1) {
         bits.forEach(function() {
             dots.push('..');
         });
-        dots.pop();
         return normalize(dots.join('/') + '/' + uri);
     }
     return normalize(uri);
