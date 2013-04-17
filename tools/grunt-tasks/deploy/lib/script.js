@@ -116,7 +116,7 @@ exports.init = function(grunt) {
                 output: output
             },
             uncompressor: {
-                output: output.replace(/\.js$/, '-debug.js')
+                output: output.replace(/\.js$/i, '-debug.js')
             }
         };
 
