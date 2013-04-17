@@ -109,7 +109,7 @@ exports.appendext = function(uri) {
 exports.parseAlias = function(pkg, name) {
     // relative name: ./class
     if (name.charAt(0) === '.') {
-        name = name.replace(/\.js$/, '');
+        name = name.replace(/\.js$/i, '');
     }
     var alias = getAlias(pkg);
     if (alias.hasOwnProperty(name)) {
@@ -132,11 +132,11 @@ exports.idFromPackage = function(pkg, filename, format) {
         filename = pkg.filename || '';
     }
     if (filename.charAt(0) === '.') {
-        return filename.replace(/\.js$/, '');
+        return filename.replace(/\.js$/i, '');
     }
     format = format || '{{family}}/{{name}}/{{version}}/{{filename}}';
     var data = pkg;
-    data.filename = filename.replace(/\.js$/, '');
+    data.filename = filename.replace(/\.js$/i, '');
     return normalize(template(format, data));
 };
 
