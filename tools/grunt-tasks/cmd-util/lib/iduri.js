@@ -5,6 +5,8 @@
  */
 // path
 var path = require('path');
+var HASH_END_RE = /#$/
+var URI_END_RE = /\?|\.(?:css|js)$|\/$/i
 
 // resolve uri to meta info
 exports.resolve = function (uri){
@@ -98,8 +100,12 @@ exports.extname = function (uri){
 };
 
 exports.appendext = function (uri){
-    var ext = path.extname(uri);
-    if (!ext) return normalize(uri + '.js');
+    // Add the default `.js` extension except that the uri ends with `#`
+    if (HASH_END_RE.test(uri)) {
+        uri = uri.slice(0, -1);
+    } else if (!URI_END_RE.test(uri)) {
+        uri += ".js";
+    }
     return normalize(uri);
 };
 
