@@ -21,6 +21,7 @@ module.exports = function (grunt){
             output: 'js',
             pkg: grunt.file.readJSON('alias.json'),
             banner: '/** cmd-build author: Newton email: yongmiui@gmail.com **/',
+            // parsers
             parsers: {
                 '.js': script.jsConcat,
                 '.css': style.cssConcat
