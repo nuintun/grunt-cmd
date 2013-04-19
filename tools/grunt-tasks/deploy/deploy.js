@@ -17,9 +17,13 @@ module.exports = function (grunt){
     grunt.registerMultiTask('deploy', 'Deploy cmd modules.', function (){
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({
+            // modules librarys
             librarys: '.librarys',
+            // output root dir
             output: 'js',
+            // pkg info
             pkg: grunt.file.readJSON('alias.json'),
+            // banner
             banner: '/** cmd-build author: Newton email: yongmiui@gmail.com **/',
             // parsers
             parsers: {
