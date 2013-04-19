@@ -7,10 +7,6 @@ module.exports = function (grunt){
     var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
     var style = require('./lib/style').init(grunt);
-    var parsers = {
-        '.js': script.jsConcat,
-        '.css': style.cssConcat
-    };
 
     // normalize uri to linux format
     function normalize(uri){
@@ -24,7 +20,11 @@ module.exports = function (grunt){
             librarys: '.librarys',
             output: 'js',
             pkg: grunt.file.readJSON('alias.json'),
-            banner: '/** cmd-build author: Newton email: yongmiui@gmail.com **/'
+            banner: '/** cmd-build author: Newton email: yongmiui@gmail.com **/',
+            parsers: {
+                '.js': script.jsConcat,
+                '.css': style.cssConcat
+            }
         });
 
         this.files.forEach(function (file){
@@ -36,6 +36,8 @@ module.exports = function (grunt){
                 options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
                 // set librarys dir
                 options.root = grunt.util._.isString(options.root) ? options.root : 'script';
+                // parsers
+                options.parsers = parsers;
                 // file include
                 var include = options.include || 'default';
                 include = grunt.util._.isFunction(include) ? include(fpath) : include;
@@ -55,7 +57,7 @@ module.exports = function (grunt){
                 // extname
                 var extname = path.extname(fpath).toLowerCase();
                 // none parsers
-                if (!parsers[extname]) {
+                if (!options.parsers[extname]) {
                     grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + ' ...' + linefeed);
                     grunt.file.copy(fpath, dest);
                     return grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
@@ -63,7 +65,7 @@ module.exports = function (grunt){
                 // start merger
                 grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + ' ...' + linefeed);
                 // merger file start
-                var merger = parsers[extname]({
+                var merger = options.parsers[extname]({
                     src: fpath
                 }, options);
                 // merger fail
