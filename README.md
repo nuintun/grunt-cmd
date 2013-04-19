@@ -8,4 +8,4 @@
 
 The file name can not contain ```.``` !
 
-```jquery.countdown.js``` was wrong , but ```jquery-countdown.js``` was right
+```jquery.countdown.js``` was wrong , but ```jquery-countdown.js``` was right !
