@@ -18,10 +18,12 @@ exports.init = function (grunt){
     }
 
     // debug modify
-    function modify(code){
+    function modify(code, parsers){
         var parsed = ast.modify(code, function (v){
             var ext = path.extname(v);
-            return ext ? v.replace(new RegExp('\\' + ext + '$'), '-debug' + ext) : v + '-debug';
+            return ext && parsers[ext] ? 
+                v.replace(new RegExp('\\' + ext + '$'), '-debug' + ext) : 
+                v + '-debug';
         });
         // return code
         return parsed.print_to_string({
@@ -177,7 +179,7 @@ exports.init = function (grunt){
         grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
         // create debug file
         grunt.log.write('>>   '.green + 'Creating debug script'.cyan + ' ...' + linefeed);
-        merger.uncompressor.code = modify(merger.uncompressor.code);
+        merger.uncompressor.code = modify(merger.uncompressor.code, options.parsers);
         grunt.log.write('>>   '.green + 'Create debug script success'.cyan + ' ...').ok();
         // return merger result
         return merger;
