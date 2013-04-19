@@ -41,8 +41,6 @@ module.exports = function (grunt){
                 options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
                 // set librarys dir
                 options.root = grunt.util._.isString(options.root) ? options.root : 'script';
-                // parsers
-                options.parsers = parsers;
                 // file include
                 var include = options.include || 'default';
                 include = grunt.util._.isFunction(include) ? include(fpath) : include;
