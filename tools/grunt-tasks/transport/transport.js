@@ -7,11 +7,6 @@ module.exports = function (grunt){
     var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
     var style = require('./lib/style').init(grunt);
-    // define parsers
-    var parsers = {
-        '.js': script.jsParser,
-        '.css': style.cssParser
-    };
 
     // normalize uri to linux format
     function normalize(uri){
@@ -42,7 +37,12 @@ module.exports = function (grunt){
             // path or object
             pkg: grunt.file.readJSON('alias.json'),
             // process
-            process: false
+            process: false,
+            // parsers
+            parsers: {
+                '.js': script.jsParser,
+                '.css': style.cssParser
+            }
         });
 
         this.files.forEach(function (file){
@@ -68,7 +68,7 @@ module.exports = function (grunt){
                 // extname
                 var extname = path.extname(fname).toLowerCase();
                 // find fileparsers
-                var fileparsers = parsers[extname];
+                var fileparsers = options.parsers[extname];
                 // set family name version
                 options.pkg.family = options.family || '';
                 options.pkg.name = dirs.shift() || '';
