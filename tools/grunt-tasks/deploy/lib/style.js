@@ -2,7 +2,7 @@
  * deploy style helper
  * author : Newton
  **/
-exports.init = function(grunt) {
+exports.init = function (grunt){
     var exports = {};
     var linefeed = grunt.util.linefeed;
     var path = require('path');
@@ -14,12 +14,12 @@ exports.init = function(grunt) {
     var verbose = grunt.option('verbose');
 
     // normalize uri to linux format
-    function normalize(uri) {
+    function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // compressor css
-    function compressor(code) {
+    function compressor(code){
         return cleancss.process(code, {
             keepSpecialComments: 0,
             removeEmpty: true,
@@ -28,7 +28,7 @@ exports.init = function(grunt) {
     }
 
     // css concat
-    exports.cssConcat = function(file, options) {
+    exports.cssConcat = function (file, options){
         var code = grunt.file.read(file.src);
         var meta = css.parse(code)[0];
         var id = meta.id;
@@ -47,10 +47,10 @@ exports.init = function(grunt) {
         }
 
         // check import
-        function hasImport() {
+        function hasImport(){
             var hasImport = false;
             meta = css.parse(code)[0];
-            code = css.stringify(meta.code, function(node) {
+            code = css.stringify(meta.code, function (node){
                 if (node.type === 'import' && node.id) {
                     hasImport = true;
                     return importNode(node);
@@ -60,7 +60,7 @@ exports.init = function(grunt) {
         }
 
         // import node
-        function importNode(node) {
+        function importNode(node){
             // circle imports
             if (grunt.util._.contains(imports, node.id)) return false;
             // cache id
@@ -82,7 +82,7 @@ exports.init = function(grunt) {
 
                 // remove circle imports
                 if (meta.id === id) {
-                    grunt.log.write('>>   '.red + 'File : '.red + fpath.grey 
+                    grunt.log.write('>>   '.red + 'File : '.red + fpath.grey
                         + ' has circle dependencies !'.red + linefeed);
                     return false;
                 }
@@ -120,9 +120,9 @@ exports.init = function(grunt) {
         }
 
         // get css code string
-        function getCode() {
+        function getCode(){
             meta = css.parse(code)[0];
-            return css.stringify(meta.code, function(node) {
+            return css.stringify(meta.code, function (node){
                 if (node.id) {
                     if (node.id.charAt(0) === '.') node.id = iduri.absolute(id, node.id);
                     if (records[node.id]) return false;
@@ -131,6 +131,7 @@ exports.init = function(grunt) {
                 }
             });
         }
+
         // output file path relative the online resource root
         var output = normalize(path.relative(path.join(options.librarys, options.root), file.src));
         // merger info

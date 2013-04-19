@@ -7,7 +7,7 @@
 var path = require('path');
 
 // resolve uri to meta info
-exports.resolve = function(uri) {
+exports.resolve = function (uri){
     // family/name@version
     // family/name#version
     // family.name@version
@@ -39,10 +39,10 @@ exports.resolve = function(uri) {
 // normalize uri
 // make sure the uri to be pretty,
 // for example a//b/../c should be a/c.
-function normalize(uri) {
+function normalize(uri){
     var isCurDir = /^\.[/\\]+/.test(uri);
     uri = path.normalize(uri).replace(/\\/g, '/');
-    uri =  !isCurDir || (isCurDir && uri.charAt(0) === '.') ? uri : './' + uri;
+    uri = !isCurDir || (isCurDir && uri.charAt(0) === '.') ? uri : './' + uri;
     var lastChar = uri.charAt(uri.length - 1);
     if (lastChar === '/') return uri;
     // if it ends with #, we should return the uri without #
@@ -56,13 +56,13 @@ exports.normalize = normalize;
 // if uri starts with /, it's absolute uri, we don't relative it.
 // if base is `path/to/a', uri is `static/a.js`
 // relative is: ../../../static/a.js
-exports.relative = function(base, uri) {
+exports.relative = function (base, uri){
     if (uri.charAt(0) === '/') return normalize(uri);
 
     var bits = normalize(base.replace(/^\.[/\\]+/, '')).split('/');
     var dots = [];
     if (bits.length > 1) {
-        bits.forEach(function() {
+        bits.forEach(function (){
             dots.push('..');
         });
         return normalize(dots.join('/') + '/' + uri);
@@ -73,37 +73,37 @@ exports.relative = function(base, uri) {
 // base is `arale/base/1.0.0/parser`
 // uri is `./base`
 // the result should be `arale/base/1.0.0/base`
-exports.absolute = function(base, uri) {
+exports.absolute = function (base, uri){
     if (uri.charAt(0) !== '.') return normalize(uri);
     uri = path.join(path.dirname(base), uri);
     return normalize(uri);
 };
 
-exports.join = function() {
+exports.join = function (){
     return normalize(path.join.apply(path, arguments).replace(/\\/g, '/'));
 };
 
-exports.dirname = function(uri) {
+exports.dirname = function (uri){
     return normalize(path.dirname(uri));
 };
 
-exports.basename = function(uri) {
+exports.basename = function (uri){
     return path.basename(uri);
 };
 
-exports.extname = function(uri) {
+exports.extname = function (uri){
     var ext = path.extname(uri);
     // default ext is js
     return ext ? ext : '.js';
 };
 
-exports.appendext = function(uri) {
+exports.appendext = function (uri){
     var ext = path.extname(uri);
     if (!ext) return normalize(uri + '.js');
     return normalize(uri);
 };
 
-exports.parseAlias = function(pkg, name) {
+exports.parseAlias = function (pkg, name){
     // relative name: ./class
     if (name.charAt(0) === '.') {
         name = name.replace(/\.js$/i, '');
@@ -115,12 +115,12 @@ exports.parseAlias = function(pkg, name) {
     return normalize(name);
 };
 
-exports.isAlias = function(pkg, name) {
+exports.isAlias = function (pkg, name){
     var alias = getAlias(pkg);
     return alias.hasOwnProperty(name);
 };
 
-exports.idFromPackage = function(pkg, filename, format) {
+exports.idFromPackage = function (pkg, filename, format){
     if (filename && !format && ~filename.indexOf('{{')) {
         format = filename;
         filename = '';
@@ -138,23 +138,23 @@ exports.idFromPackage = function(pkg, filename, format) {
 };
 
 // validate if the format is the default format
-exports.validateFormat = function(format) {
+exports.validateFormat = function (format){
     var regex = /^\{\{\s*family\s*\}\}\/\{\{\s*name\s*\}\}\/\{\{\s*version\s*\}\}\/\{\{\s*filename\s*\}\}$/;
     return regex.test(format);
 };
 
-function getAlias(pkg) {
+function getAlias(pkg){
     return pkg.alias || {};
 }
 
-function template(format, data) {
+function template(format, data){
     var regex = /\{\{\s*(.*?)\s*\}\}/g;
     var ret = format;
     var match = regex.exec(format);
 
-    var getData = function(obj, key) {
+    var getData = function (obj, key){
         var keys = key.split('.');
-        keys.forEach(function(k) {
+        keys.forEach(function (k){
             if (obj && obj.hasOwnProperty(k)) {
                 obj = obj[k];
             }

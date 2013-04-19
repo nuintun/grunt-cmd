@@ -2,7 +2,7 @@
  * deploy script helper
  * author : Newton
  **/
-exports.init = function(grunt) {
+exports.init = function (grunt){
     var exports = {};
     var linefeed = grunt.util.linefeed;
     var path = require('path');
@@ -13,13 +13,13 @@ exports.init = function(grunt) {
     var verbose = grunt.option('verbose');
 
     // normalize uri to linux format
-    function normalize(uri) {
+    function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // debug modify
-    function modify(code) {
-        var parsed = ast.modify(code, function(v) {
+    function modify(code){
+        var parsed = ast.modify(code, function (v){
             var ext = path.extname(v);
             return ext ? v.replace(new RegExp('\\' + ext + '$'), '-debug' + ext) : v + '-debug';
         });
@@ -31,7 +31,7 @@ exports.init = function(grunt) {
     }
 
     // compressor code
-    function compressor(code) {
+    function compressor(code){
         return UglifyJS.minify(code, {
             outSourceMap: '{{file}}',
             fromString: true,
@@ -40,7 +40,7 @@ exports.init = function(grunt) {
     }
 
     // fix sourcemap
-    function fixSourcemap(code, file) {
+    function fixSourcemap(code, file){
         var mini = iduri.basename(file);
         var full = mini.replace(/\.js$/i, '-debug.js');
         return code.replace('"file":"{{file}}"', '"file":"' + mini + '"')
@@ -49,13 +49,13 @@ exports.init = function(grunt) {
 
     // combine, not include the excludes file
     // default read file from fpath, but you can set from code string by set fromstr args
-    function combine(fpath, options, fromstr) {
+    function combine(fpath, options, fromstr){
         var stack = [];
         var excludes = options.excludes;
         var records = grunt.option('concat-records');
 
         // deep combine helper
-        function loop(fpath, options) {
+        function loop(fpath, options){
             // file path, if set fromstr, fpath equal code
             fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(fpath)));
             // cache readed file, prevent an circle loop, optimize efficiency        
@@ -73,14 +73,14 @@ exports.init = function(grunt) {
             if (meta) {
                 if (meta.id) {
                     // loop dependencies modules
-                    meta.dependencies.forEach(function(id) {
+                    meta.dependencies.forEach(function (id){
                         // relative require
                         if (id.charAt(0) === '.') {
                             id = iduri.absolute(meta.id, id);
                         }
                         // deep combine
-                        if (!records[id] && id !== meta.id 
-                            && excludes.indexOf(id) === -1 
+                        if (!records[id] && id !== meta.id
+                            && excludes.indexOf(id) === -1
                             && /\.js$/i.test(iduri.appendext(id))) {
                             loop(id, options);
                         }
@@ -103,7 +103,7 @@ exports.init = function(grunt) {
     }
 
     // exports js concat
-    exports.jsConcat = function(file, options) {
+    exports.jsConcat = function (file, options){
         // code stack
         var stack = [];
         var excludes = options.excludes;
@@ -128,16 +128,16 @@ exports.init = function(grunt) {
                 if (meta) {
                     if (meta.id) {
                         // include relative file
-                        meta.dependencies.forEach(function(id) {
+                        meta.dependencies.forEach(function (id){
                             if (id.charAt(0) === '.') {
                                 id = iduri.absolute(meta.id, id);
                                 if (excludes.indexOf(id) === -1 && id !== meta.id) {
-                                    var fpath = normalize(path.join(options.librarys, 
+                                    var fpath = normalize(path.join(options.librarys,
                                         options.root, iduri.appendext(id)));
                                     if (grunt.file.exists(fpath)) {
                                         code.push(grunt.file.read(fpath));
                                     } else {
-                                        grunt.log.write('>>   '.red + 'Can not find module : '.red 
+                                        grunt.log.write('>>   '.red + 'Can not find module : '.red
                                             + fpath.grey + ' !'.red + linefeed);
                                     }
                                 }
@@ -145,7 +145,7 @@ exports.init = function(grunt) {
                         });
                     } else {
                         // module has no module id
-                        grunt.log.write('>>   '.red + 'Module : '.red + fpath.grey 
+                        grunt.log.write('>>   '.red + 'Module : '.red + fpath.grey
                             + ' has no module id !'.red + linefeed);
                     }
                 }
@@ -165,7 +165,7 @@ exports.init = function(grunt) {
         grunt.log.write('>>   '.green + 'Compressoring script'.cyan + ' ...' + linefeed);
         var compressorAst = compressor(merger.compressor.code);
         grunt.log.write('>>   '.green + 'Compressor script success'.cyan + ' ...').ok();
-        merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL=' 
+        merger.compressor.code = compressorAst.code + linefeed + '//@ sourceMappingURL='
             + iduri.basename(merger.compressor.output) + '.map';
         // create source map
         grunt.log.write('>>   '.green + 'Creating script sourcemap'.cyan + ' ...' + linefeed);

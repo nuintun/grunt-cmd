@@ -2,7 +2,7 @@
  * deploy task
  * author : Newton
  **/
-module.exports = function(grunt) {
+module.exports = function (grunt){
     var path = require('path');
     var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
@@ -13,12 +13,12 @@ module.exports = function(grunt) {
     };
 
     // normalize uri to linux format
-    function normalize(uri) {
+    function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // registerMultiTask
-    grunt.registerMultiTask('deploy', 'Deploy cmd modules.', function() {
+    grunt.registerMultiTask('deploy', 'Deploy cmd modules.', function (){
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({
             librarys: '.librarys',
@@ -27,8 +27,8 @@ module.exports = function(grunt) {
             banner: '/** cmd-build author: Newton email: yongmiui@gmail.com **/'
         });
 
-        this.files.forEach(function(file) {
-            file.src.forEach(function(fpath) {
+        this.files.forEach(function (file){
+            file.src.forEach(function (fpath){
                 fpath = normalize(fpath);
                 // reset records
                 grunt.option('concat-records', {});

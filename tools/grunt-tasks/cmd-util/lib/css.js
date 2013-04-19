@@ -1,12 +1,14 @@
-/**
+/*
  * css
  * https://github.com/spmjs/spm2/issues/4
+ *
  * Hsiaoming Yang <lepture@me.com>
  */
-/**
+
+/* 
  * parse code into a tree
  */
-exports.parse = function(code) {
+exports.parse = function (code){
     var lines = code.split(/\r\n|\r|\n/);
     var isStarted = false;
     var id, line;
@@ -33,7 +35,7 @@ exports.parse = function(code) {
     return [node];
 };
 
-function match(text, key) {
+function match(text, key){
     // /*! key value */
     var re = new RegExp('^\\/\\*!\\s*' + key + '\\s+(.*?)\\s*\\*\\/$');
     var m = text.match(re);
@@ -41,10 +43,10 @@ function match(text, key) {
     return m[1];
 }
 
-/**
+/*
  * recursive parse a block type code
  */
-function parseBlock(code) {
+function parseBlock(code){
     var lines = code.split(/\r\n|\r|\n/);
     var tree = [];
 
@@ -59,7 +61,7 @@ function parseBlock(code) {
         parseInBlock();
     }
 
-    function pushStringNode() {
+    function pushStringNode(){
         if (!stringNode.code) return;
         var text = stringNode.code.replace(/^\n+/, '');
         text = text.replace(/\n+$/, '');
@@ -73,7 +75,7 @@ function parseBlock(code) {
         };
     }
 
-    function parseLine() {
+    function parseLine(){
         if (blockDepth !== 0) return;
 
         var text = lines.shift();
@@ -90,13 +92,12 @@ function parseBlock(code) {
                 id: m,
                 type: 'import'
             });
-            return;
         } else {
             stringNode.code = [stringNode.code, text].join('\n');
         }
     }
 
-    function parseInBlock() {
+    function parseInBlock(){
         var text = lines[0];
         var start = match(text, 'block');
         if (start) {
@@ -148,18 +149,18 @@ function parseBlock(code) {
     return tree;
 }
 
-/**
+/*
  * Walk through the code tree
  */
-exports.walk = function(code, fn) {
+exports.walk = function (code, fn){
     if (!Array.isArray(code)) {
         code = exports.parse(code);
     }
 
-    function walk(code) {
+    function walk(code){
         // if fn return false, it will stop the walk
         if (Array.isArray(code)) {
-            code.forEach(function(node) {
+            code.forEach(function (node){
                 if (fn(node) !== false && node.type === 'block' && Array.isArray(node.code)) {
                     walk(node.code, node);
                 }
@@ -170,18 +171,18 @@ exports.walk = function(code, fn) {
     walk(code);
 };
 
-/**
+/*
  * print string of the parsed code
  */
-exports.stringify = function(code, filter) {
+exports.stringify = function (code, filter){
     if (!Array.isArray(code)) {
         return code;
     }
 
-    function print(code) {
+    function print(code){
         var cursor = '';
 
-        code.forEach(function(node) {
+        code.forEach(function (node){
             if (filter) {
                 var ret = filter(node);
                 if (ret === false) return;
@@ -197,17 +198,17 @@ exports.stringify = function(code, filter) {
             }
             if (node.type === 'block' && node.id) {
                 cursor = [
-                cursor,
+                    cursor,
                     '',
                     '/*! block ' + node.id + ' */',
-                print(node.code),
+                    print(node.code),
                     '/*! endblock ' + node.id + ' */',
-                    '', ].join('\n');
+                    ''
+                ].join('\n');
                 return;
             }
             if (node.type === 'block' && !node.id) {
                 cursor = print(node.code);
-                return;
             }
         });
         cursor = cursor.replace(/^\n+/, '');

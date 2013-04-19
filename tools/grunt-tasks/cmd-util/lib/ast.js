@@ -1,14 +1,15 @@
 /*
  * spm.sdk.ast
  * https://spmjs.org
+ *
  * Hsiaoming Yang <lepture@me.com>
  */
-// import util
+
 var util = require('util');
 var UglifyJS = require('uglify-js');
 
 // UglifyJS ast.
-function getAst(ast, options) {
+function getAst(ast, options){
     if (isString(ast)) {
         return UglifyJS.parse(ast, options || {});
     }
@@ -23,11 +24,11 @@ exports.getAst = getAst;
 // Return everything in define:
 //
 //   {id: 'id', dependencies: ['deps'], factory: ast of fn}
-function parse(ast) {
+function parse(ast){
     ast = getAst(ast);
     var meta = [];
 
-    var walker = new UglifyJS.TreeWalker(function(node) {
+    var walker = new UglifyJS.TreeWalker(function (node, descend){
         // don't collect dependencies in the define in define
         if (node instanceof UglifyJS.AST_Call && node.start.value === 'define') {
             var define = getDefine(node);
@@ -42,7 +43,7 @@ function parse(ast) {
 }
 exports.parse = parse;
 
-exports.parseFirst = function(ast) {
+exports.parseFirst = function (ast){
     return parse(ast)[0];
 };
 
@@ -63,7 +64,7 @@ exports.parseFirst = function(ast) {
 //    define('id-debug', ['a-debug'], function(require) {
 //        var $ = require('jquery-debug')
 //    })
-function modify(ast, options) {
+function modify(ast, options){
     ast = getAst(ast);
 
     var idfn, depfn, requirefn;
@@ -77,7 +78,7 @@ function modify(ast, options) {
 
     if (isObject(depfn)) {
         var alias = depfn;
-        depfn = function(value) {
+        depfn = function (value){
             if (alias.hasOwnProperty(value)) {
                 return alias[value];
             } else {
@@ -86,7 +87,7 @@ function modify(ast, options) {
         };
     }
 
-    var trans = new UglifyJS.TreeTransformer(function(node) {
+    var trans = new UglifyJS.TreeTransformer(function (node, descend){
         // modify define
         if ((idfn || depfn) && node instanceof UglifyJS.AST_Call && node.start.value === 'define' && node.args.length) {
             var args = [];
@@ -107,21 +108,18 @@ function modify(ast, options) {
             } else if (depfn) {
                 var elements = [];
                 if (meta.dependencies.length && isFunction(depfn)) {
-                    meta.dependencies.forEach(function(d) {
+                    meta.dependencies.forEach(function (d){
                         var value = depfn(d);
                         if (value) {
                             elements.push(
-                            new UglifyJS.AST_String({
-                                value: value
-                            }));
+                                new UglifyJS.AST_String({value: value})
+                            );
                         }
                     });
                 } else if (isString(depfn)) {
-                    elements = [new UglifyJS.AST_String({
-                        value: depfn
-                    })];
+                    elements = [new UglifyJS.AST_String({value: depfn})];
                 } else if (Array.isArray(depfn)) {
-                    elements = depfn.map(function(value) {
+                    elements = depfn.map(function (value){
                         return new UglifyJS.AST_String({
                             value: value
                         });
@@ -134,14 +132,10 @@ function modify(ast, options) {
                         elements: elements
                     }));
                 } else {
-                    args.push(new UglifyJS.AST_Array({
-                        elements: elements
-                    }));
+                    args.push(new UglifyJS.AST_Array({elements: elements}));
                 }
             } else {
-                args.push(new UglifyJS.AST_Array({
-                    elements: []
-                }));
+                args.push(new UglifyJS.AST_Array({elements: []}));
             }
             if (meta.factory) {
                 args.push(meta.factory);
@@ -163,7 +157,7 @@ function modify(ast, options) {
 }
 exports.modify = modify;
 
-function getDefine(node) {
+function getDefine(node){
     var id, factory, dependencyNode, dependencies = [];
     // don't collect dependencies in the define in define
     if (node instanceof UglifyJS.AST_Call && node.start.value === 'define') {
@@ -179,7 +173,7 @@ function getDefine(node) {
             var child = node.args[0];
             if (child instanceof UglifyJS.AST_Array) {
                 // define([], function(){});
-                dependencies = map(child.elements, function(el) {
+                dependencies = map(child.elements, function (el){
                     if (el instanceof UglifyJS.AST_String) {
                         return el.getValue();
                     }
@@ -192,25 +186,26 @@ function getDefine(node) {
             }
         } else {
             factory = node.args[2];
-            var firstChild = node.args[0],
-                secondChild = node.args[1];
+            var firstChild = node.args[0], secondChild = node.args[1];
             if (firstChild instanceof UglifyJS.AST_String) {
                 id = firstChild.getValue();
             }
             if (secondChild instanceof UglifyJS.AST_Array) {
-                dependencies = map(secondChild.elements, function(el) {
+                dependencies = map(secondChild.elements, function (el){
                     if (el instanceof UglifyJS.AST_String) {
                         return el.getValue();
                     }
                 });
+                dependencyNode = secondChild;
+            } else if (secondChild instanceof UglifyJS.AST_Null) {
+                if (factory instanceof UglifyJS.AST_Function) {
+                    dependencies = getRequires(factory);
+                }
             }
-            dependencyNode = secondChild;
         }
     }
     return {
-        id: id,
-        dependencies: dependencies,
-        factory: factory,
+        id: id, dependencies: dependencies, factory: factory,
         dependencyNode: dependencyNode
     };
 }
@@ -223,12 +218,12 @@ function getDefine(node) {
 //   })
 //
 // Return everything in `require`: ['jquery', 'lodash'].
-function getRequires(ast) {
+function getRequires(ast){
     ast = getAst(ast);
 
     var deps = [];
 
-    var walker = new UglifyJS.TreeWalker(function(node) {
+    var walker = new UglifyJS.TreeWalker(function (node, descend){
         if (node instanceof UglifyJS.AST_Call && node.start.value === 'require' && !node.expression.property) {
             var args = node.expression.args || node.args;
             if (args && args.length === 1) {
@@ -258,12 +253,12 @@ function getRequires(ast) {
 //        if (value === 'jquery') return 'zepto';
 //        return value;
 //    })
-function replaceRequire(ast, fn) {
+function replaceRequire(ast, fn){
     ast = getAst(ast);
 
     if (isObject(fn)) {
         var alias = fn;
-        fn = function(value) {
+        fn = function (value){
             if (alias.hasOwnProperty(value)) {
                 return alias[value];
             } else {
@@ -272,7 +267,7 @@ function replaceRequire(ast, fn) {
         };
     }
 
-    var trans = new UglifyJS.TreeTransformer(function(node) {
+    var trans = new UglifyJS.TreeTransformer(function (node, descend){
         // modify require
         if (fn && node instanceof UglifyJS.AST_Call && node.start.value === 'require' && node.args.length === 1) {
             var child = node.args[0];
@@ -294,19 +289,16 @@ function replaceRequire(ast, fn) {
     return ast.transform(trans);
 }
 
-function isString(str) {
+function isString(str){
     return typeof str === 'string';
 }
-
-function isFunction(fn) {
+function isFunction(fn){
     return typeof fn === 'function';
 }
-
-function isObject(obj) {
+function isObject(obj){
     return (typeof obj === 'object' && !Array.isArray(obj));
 }
-
-function map(obj, fn, context) {
+function map(obj, fn, context){
     var results = [];
     if (obj === null) return results;
     if (obj.map === Array.prototype.map) return obj.map(fn, context);

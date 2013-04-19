@@ -2,7 +2,7 @@
  * transport style helper
  * author : Newton
  **/
-exports.init = function(grunt) {
+exports.init = function (grunt){
     var exports = {};
     var path = require('path');
     var format = require('util').format;
@@ -12,12 +12,12 @@ exports.init = function(grunt) {
     var linefeed = grunt.util.linefeed;
 
     // normalize uri to linux format
-    function normalize(uri) {
+    function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // css to js parser
-    exports.css2jsParser = function(file, options) {
+    exports.css2jsParser = function (file, options){
         var fpath = normalize(file.src);
         var dest = normalize(file.dest) + '.js';
         // don't transport debug css files
@@ -36,14 +36,14 @@ exports.init = function(grunt) {
     };
 
     // the real css parser
-    exports.cssParser = function(file, options) {
+    exports.cssParser = function (file, options){
         var fpath = normalize(file.src);
         var dest = normalize(file.dest);
         var code = file.code;
         var codeAst = css.parse(code);
 
         // file
-        code = css.stringify(codeAst[0].code, function(node) {
+        code = css.stringify(codeAst[0].code, function (node){
             if (node.type === 'import' && node.id) {
                 if (iduri.isAlias(options.pkg, node.id)) {
                     node.id = iduri.parseAlias(options.pkg, node.id);
@@ -68,7 +68,7 @@ exports.init = function(grunt) {
 };
 
 // helpers
-function css2js(code, id) {
+function css2js(code, id){
     var cleancss = require('clean-css');
     // transform css to js
     // spmjs/spm#581
@@ -82,7 +82,7 @@ function css2js(code, id) {
         removeEmpty: true
     });
     // spmjs/spm#651
-    code = code.split(/\r\n|\r|\n/).map(function(line) {
+    code = code.split(/\r\n|\r|\n/).map(function (line){
         return line.replace(/\\/g, '\\\\');
     }).join('\n');
 

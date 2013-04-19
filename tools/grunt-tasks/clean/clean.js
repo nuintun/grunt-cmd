@@ -4,16 +4,16 @@
  * Copyright (c) 2012 Tim Branyen, contributors
  * Licensed under the MIT license.
  */
-module.exports = function(grunt) {
+module.exports = function (grunt){
     var path = require('path');
 
     // normalize uri to linux format
-    function normalize(uri) {
+    function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
     // register task
-    grunt.registerMultiTask('clean', 'Clean files and folders.', function() {
+    grunt.registerMultiTask('clean', 'Clean files and folders.', function (){
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({
             force: false
@@ -22,7 +22,7 @@ module.exports = function(grunt) {
         grunt.verbose.writeflags(options, 'Options');
 
         // Clean specified files / dirs.
-        this.filesSrc.forEach(function(filepath) {
+        this.filesSrc.forEach(function (filepath){
             filepath = normalize(filepath);
             grunt.log.write('>> '.green + 'Cleaning '.cyan + filepath.grey + ' ...');
 
