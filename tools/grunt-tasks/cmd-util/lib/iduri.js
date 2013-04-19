@@ -93,10 +93,14 @@ exports.basename = function (uri){
     return path.basename(uri);
 };
 
+// this is very different from node's path.extname.
 exports.extname = function (uri){
+    if (HASH_END_RE.test(uri)) {
+        uri = uri.slice(0, -1);
+    }
     var ext = path.extname(uri);
     // default ext is js
-    return ext ? ext : '.js';
+    return URI_END_RE.test(ext) ? ext : '.js';
 };
 
 exports.appendext = function (uri){
