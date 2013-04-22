@@ -24,7 +24,7 @@ module.exports = function (grunt){
             // pkg info
             pkg: grunt.file.readJSON('alias.json'),
             // banner
-            banner: '/** cmd-build author: Newton email: yongmiui@gmail.com **/',
+            banner: '/*! cmd-build author: Newton email: yongmiui@gmail.com **/',
             // parsers
             parsers: {
                 '.js': script.jsConcat,
