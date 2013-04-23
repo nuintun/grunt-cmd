@@ -6,7 +6,7 @@
 // path
 var path = require('path');
 var HASH_END_RE = /#$/;
-var URI_END_RE = /\?|\.(?:css|js|html|htm|json|tpl|xml)$|\/$/i;
+var URI_END_RE = /\?|\.(?:css|js|html|htm|json|tpl)$|\/$/i;
 
 // resolve uri to meta info
 exports.resolve = function (uri){
