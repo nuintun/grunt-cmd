@@ -137,7 +137,7 @@ exports.init = function (grunt){
                                     var fpath = normalize(path.join(options.librarys,
                                         options.root, iduri.appendext(id)));
                                     if (grunt.file.exists(fpath)) {
-                                        code.push(grunt.file.read(fpath));
+                                        stack.push(grunt.file.read(fpath));
                                     } else {
                                         grunt.log.write('>>   '.red + 'Can not find module : '.red
                                             + fpath.grey + ' !'.red + linefeed);
