@@ -21,8 +21,8 @@ exports.init = function (grunt){
     function modify(code, parsers){
         var parsed = ast.modify(code, function (v){
             var ext = path.extname(v);
-            return ext && parsers[ext] ? 
-                v.replace(new RegExp('\\' + ext + '$'), '-debug' + ext) : 
+            return ext && parsers[ext] ?
+                v.replace(new RegExp('\\' + ext + '$'), '-debug' + ext) :
                 v + '-debug';
         });
         // return code
