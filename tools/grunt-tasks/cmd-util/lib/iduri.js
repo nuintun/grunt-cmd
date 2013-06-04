@@ -1,7 +1,7 @@
 /*
  * iduri
  * https://spmjs.org
- * Hsiaoming Yang <lepture@me.com>
+ * Hsiaoming Yang <me@lepture.com>
  */
 // path
 var path = require('path');
