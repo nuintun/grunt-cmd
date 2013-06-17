@@ -1,7 +1,6 @@
 /*
  * css
  * https://github.com/spmjs/spm2/issues/4
- *
  * Hsiaoming Yang <me@lepture.com>
  */
 
