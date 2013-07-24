@@ -1,10 +1,10 @@
 /**
  * ast parser and modifier
  * https://spmjs.org
+ *
  * Hsiaoming Yang <me@lepture.com>
  */
 
-var util = require('util');
 var UglifyJS = require('uglify-js');
 
 // UglifyJS ast.
@@ -182,6 +182,7 @@ function getDefine(node){
             if (child instanceof UglifyJS.AST_String) {
                 // define('id', function() {});
                 id = child.getValue();
+                dependencies = getRequires(factory);
             }
         } else {
             factory = node.args[2];
@@ -196,7 +197,7 @@ function getDefine(node){
                     }
                 });
                 dependencyNode = secondChild;
-            } else if (secondChild instanceof UglifyJS.AST_Null) {
+            } else if ((secondChild instanceof UglifyJS.AST_Null) || (secondChild instanceof UglifyJS.AST_Undefined)) {
                 if (factory instanceof UglifyJS.AST_Function) {
                     dependencies = getRequires(factory);
                 }
