@@ -2,12 +2,14 @@
  * ast parser and modifier
  * https://spmjs.org
  *
- * Hsiaoming Yang <me@lepture.com>
+ * copyright (c) 2013 by Hsiaoming Yang
  */
 
 var UglifyJS = require('uglify-js');
 
-// UglifyJS ast.
+/**
+ * Ensure it it a parsed UglifyJS ast
+ */
 function getAst(ast, options){
     if (isString(ast)) {
         return UglifyJS.parse(ast, options || {});
@@ -16,13 +18,17 @@ function getAst(ast, options){
 }
 exports.getAst = getAst;
 
-// A standard cmd module:
-//
-//   define('id', ['deps'], fn)
-//
-// Return everything in define:
-//
-//   {id: 'id', dependencies: ['deps'], factory: ast of fn}
+/**
+ * Parse everything in `define`.
+ *
+ * Example:
+ *
+ *   define('id', ['deps'], fn)
+ *
+ * Return value:
+ *
+ *   [{id: 'id', dependencies: ['deps'], factory: fnAst}]
+ */
 function parse(ast){
     ast = getAst(ast);
     var meta = [];
@@ -42,37 +48,45 @@ function parse(ast){
 }
 exports.parse = parse;
 
+/**
+ * The first meta data returned by `parse`.
+ */
 exports.parseFirst = function (ast){
     return parse(ast)[0];
 };
 
-// Replace everything in `define` and `require`.
-//
-//    define('id', ['a'], function(require) {
-//        var $ = require('jquery')
-//    })
-//
-// Replace the code with:
-//
-//    replaceAll(code, function(value) {
-//        return value + '-debug';
-//    })
-//
-// The result will be:
-//
-//    define('id-debug', ['a-debug'], function(require) {
-//        var $ = require('jquery-debug')
-//    })
+/**
+ * Modify `define` and `require` of the given code.
+ *
+ * Example:
+ *
+ *   define('id', ['foo'], function(require) {
+ *     var bar = require('bar')
+ *   })
+ *
+ * Replace code with:
+ *
+ *   modify(code, function(value) {
+ *     return value + '-debug';
+ *   })
+ *
+ * Return value (`print_to_string` to get the code):
+ *
+ *   define('id-debug', ['foo-debug'], function(require) {
+ *       var bar = require('bar-debug');
+ *   })
+ */
 function modify(ast, options){
     ast = getAst(ast);
 
-    var idfn, depfn, requirefn;
+    var idfn, depfn, requirefn, asyncfn;
     if (isFunction(options)) {
-        idfn = depfn = requirefn = options;
+        idfn = depfn = requirefn = asyncfn = options;
     } else {
         idfn = options.id;
         depfn = options.dependencies;
         requirefn = options.require;
+        asyncfn = options.async;
     }
 
     if (isObject(depfn)) {
@@ -139,18 +153,14 @@ function modify(ast, options){
             if (meta.factory) {
                 args.push(meta.factory);
             }
-            return new UglifyJS.AST_Call({
-                start: node.start,
-                end: node.end,
-                expression: node.expression,
-                args: args
-            });
+            node.args = args;
+            return node;
         }
     });
     ast = ast.transform(trans);
 
-    if (requirefn) {
-        ast = replaceRequire(ast, requirefn);
+    if (requirefn || asyncfn) {
+        ast = replaceRequire(ast, requirefn, asyncfn);
     }
     return ast;
 }
@@ -210,14 +220,20 @@ function getDefine(node){
     };
 }
 
-// A standard cmd module:
-//
-//   define(function(require) {
-//       var $ = require('jquery')
-//       var _ = require('lodash')
-//   })
-//
-// Return everything in `require`: ['jquery', 'lodash'].
+/**
+ * Return everything in `require`.
+ *
+ * Example:
+ *
+ *  define(function(require) {
+ *    var $ = require('jquery')
+ *    var _ = require('lodash')
+ *  })
+ *
+ * Return value:
+ *
+ *   ['jquery', 'lodash']
+ */
 function getRequires(ast){
     ast = getAst(ast);
 
@@ -241,49 +257,66 @@ function getRequires(ast){
     return deps;
 }
 
-// Replace every string in `require`.
-//
-//    define(function(require) {
-//        var $ = require('jquery')
-//    })
-//
-// Replace requires in this code:
-//
-//    replaceRequire(code, function(value) {
-//        if (value === 'jquery') return 'zepto';
-//        return value;
-//    })
-function replaceRequire(ast, fn){
+/**
+ * Replace every string in `require`.
+ *
+ * Example:
+ *
+ *   define(function(require) {
+ *     var $ = require('jquery')
+ *   })
+ *
+ * Replace requires in this code:
+ *
+ *   replaceRequire(code, function(value) {
+ *     if (value === 'jquery') return 'zepto';
+ *     return value;
+ *   })
+ */
+function replaceRequire(ast, requirefn, asyncfn){
     ast = getAst(ast);
 
-    if (isObject(fn)) {
-        var alias = fn;
-        fn = function (value){
-            if (alias.hasOwnProperty(value)) {
-                return alias[value];
-            } else {
-                return value;
-            }
-        };
+    var makeFunction = function (fn){
+        if (!fn) {
+            return fn;
+        }
+        if (isObject(fn)) {
+            var alias = fn;
+            fn = function (value){
+                if (alias.hasOwnProperty(value)) {
+                    return alias[value];
+                } else {
+                    return value;
+                }
+            };
+        }
+        return fn;
     }
 
+    var replaceChild = function (node, fn){
+        var child = node.args[0];
+        if (child instanceof UglifyJS.AST_String) {
+            var childNode = new UglifyJS.AST_String({
+                start: child.start,
+                end: child.end,
+                value: fn(child.getValue())
+            });
+            node.args = [childNode];
+            return node;
+        }
+    }
+
+    requirefn = makeFunction(requirefn);
+    asyncfn = makeFunction(asyncfn);
+
     var trans = new UglifyJS.TreeTransformer(function (node, descend){
-        // modify require
-        if (fn && node instanceof UglifyJS.AST_Call && node.expression.name === 'require' && node.args.length === 1) {
-            var child = node.args[0];
-            if (child instanceof UglifyJS.AST_String) {
-                var requiredNode = new UglifyJS.AST_String({
-                    start: child.start,
-                    end: child.end,
-                    value: fn(child.getValue())
-                });
-                return new UglifyJS.AST_Call({
-                    start: node.start,
-                    end: node.start,
-                    expression: node.expression,
-                    args: [requiredNode]
-                });
-            }
+        // `require.async('foo')
+        if (asyncfn && node instanceof UglifyJS.AST_Call && node.start.value === "require" && node.expression.property === 'async' && node.args.length == 1) {
+            return replaceChild(node, asyncfn);
+        }
+        // `require('foo')
+        if (requirefn && node instanceof UglifyJS.AST_Call && node.expression.name === 'require' && node.args.length === 1) {
+            return replaceChild(node, requirefn);
         }
     });
     return ast.transform(trans);
