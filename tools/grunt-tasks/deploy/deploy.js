@@ -22,7 +22,7 @@ module.exports = function (grunt){
             // output root dir
             output: 'js',
             // pkg info
-            pkg: grunt.file.readJSON('alias.json'),
+            pkg: grunt.file.exists('alias.json') ? grunt.file.readJSON('alias.json') : {alias: {}},
             // banner
             banner: '/*! cmd-build author: Newton email: yongmiui@gmail.com **/',
             // parsers
