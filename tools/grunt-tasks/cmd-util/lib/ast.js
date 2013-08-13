@@ -225,10 +225,10 @@ function getDefine(node){
  *
  * Example:
  *
- *  define(function(require) {
- *    var $ = require('jquery')
- *    var _ = require('lodash')
- *  })
+ *   define(function(require) {
+ *     var $ = require('jquery')
+ *     var _ = require('lodash')
+ *   })
  *
  * Return value:
  *
@@ -263,7 +263,10 @@ function getRequires(ast){
  * Example:
  *
  *   define(function(require) {
- *     var $ = require('jquery')
+ *     var $ = require('jquery');
+ *     require.async('foo', function(foo){
+ *       // TODO callback
+ *     });
  *   })
  *
  * Replace requires in this code:
@@ -271,18 +274,22 @@ function getRequires(ast){
  *   replaceRequire(code, function(value) {
  *     if (value === 'jquery') return 'zepto';
  *     return value;
+ *   }, function(value) {
+ *     if (value === 'foo') return 'app/foo';
+ *     return value;
  *   })
  */
 function replaceRequire(ast, requirefn, asyncfn){
     ast = getAst(ast);
 
     var makeFunction = function (fn){
-        if (!fn) {
+        if (isFunction(fn)) {
             return fn;
         }
+
         if (isObject(fn)) {
             var alias = fn;
-            fn = function (value){
+            return function (value){
                 if (alias.hasOwnProperty(value)) {
                     return alias[value];
                 } else {
@@ -290,7 +297,10 @@ function replaceRequire(ast, requirefn, asyncfn){
                 }
             };
         }
-        return fn;
+
+        return function (value){
+            return value;
+        };
     }
 
     var replaceChild = function (node, fn){
@@ -301,7 +311,7 @@ function replaceRequire(ast, requirefn, asyncfn){
                 end: child.end,
                 value: fn(child.getValue())
             });
-            node.args = [childNode];
+            node.args.splice(0, 1, childNode);
             return node;
         }
     }
@@ -310,13 +320,14 @@ function replaceRequire(ast, requirefn, asyncfn){
     asyncfn = makeFunction(asyncfn);
 
     var trans = new UglifyJS.TreeTransformer(function (node, descend){
-        // `require.async('foo')
-        if (asyncfn && node instanceof UglifyJS.AST_Call && node.start.value === "require" && node.expression.property === 'async' && node.args.length == 1) {
-            return replaceChild(node, asyncfn);
-        }
-        // `require('foo')
-        if (requirefn && node instanceof UglifyJS.AST_Call && node.expression.name === 'require' && node.args.length === 1) {
+        // require('foo')
+        if (requirefn && node instanceof UglifyJS.AST_Call && node.expression.name === 'require' && node.args.length) {
             return replaceChild(node, requirefn);
+        }
+
+        // require.async('foo', function(foo){ //TODO callback })
+        if (asyncfn && node instanceof UglifyJS.AST_Call && node.start.value === 'require' && node.expression.property === 'async' && node.args.length) {
+            return replaceChild(node, asyncfn);
         }
     });
     return ast.transform(trans);
