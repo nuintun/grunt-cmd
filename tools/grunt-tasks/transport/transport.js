@@ -35,7 +35,7 @@ module.exports = function (grunt){
             // create a debug file or not
             debug: true,
             // path or object
-            pkg: grunt.file.readJSON('alias.json'),
+            pkg: grunt.file.exists('alias.json') ? grunt.file.readJSON('alias.json') : {alias: {}},
             // process
             process: false,
             // parsers
