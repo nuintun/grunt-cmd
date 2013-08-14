@@ -1,5 +1,43 @@
 // GruntFile
 module.exports = function(grunt) {
+    // UglifyJS
+    var UglifyJS = require('uglify-js');
+    
+    // 通过config.js获取alias
+    function getAlias(ast){
+        var alias = {},
+            walker = new UglifyJS.TreeWalker(function (node, descend){
+                if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs' && node.expression.property === 'config' && node.args.length) {
+                    node.args[0].properties.forEach(function (node){
+                        if (node.key === 'alias') {
+                            node.value.properties.forEach(function (node){
+                                alias[node.key] = node.value.value;
+                            });
+                        }
+                    });
+                }
+            });
+
+        ast.walk(walker);
+
+        return alias;
+    }
+
+    // 获取线上配置文件config.js
+    function getConfig(ast){
+        var trans = new UglifyJS.TreeTransformer(function (node, descend){
+            if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs' && node.expression.property === 'config' && node.args.length) {
+                node.args[0].properties = node.args[0].properties.filter(function (node){
+                    return node.key !== 'alias';
+                });
+
+                return node;
+            }
+        });
+
+        return ast.transform(trans).print_to_string({ beautify: true, comments: true });
+    }
+    
     // init config
     grunt.initConfig({
         transport: {
