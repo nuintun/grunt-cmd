@@ -47,6 +47,9 @@ exports.init = function (grunt){
             dependencies: deps,
             require: function (v){
                 return iduri.parseAlias(options.pkg, v);
+            },
+            async: function (v){
+                return iduri.parseAlias(options.pkg, v);
             }
         });
         // write file
