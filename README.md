@@ -1,5 +1,5 @@
 # CMD transport and deploy with grunt
 
-> Author: Newton
+> -Author: Newton
 
-> Pubdate: 2012-04-12
+> -Pubdate: 2012-04-12
