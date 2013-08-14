@@ -301,20 +301,18 @@ function replaceRequire(ast, requirefn, asyncfn){
         return function (value){
             return value;
         };
-    }
+    };
 
     var replaceChild = function (node, fn){
-        var child = node.args[0];
-        if (child instanceof UglifyJS.AST_String) {
-            var childNode = new UglifyJS.AST_String({
-                start: child.start,
-                end: child.end,
-                value: fn(child.getValue())
-            });
-            node.args.splice(0, 1, childNode);
-            return node;
-        }
-    }
+        var args = node.args[0],
+            children = args instanceof UglifyJS.AST_String ? [args] : args.elements;
+
+        children.forEach(function (child){
+            if (child instanceof UglifyJS.AST_String) {
+                child.value = fn(child.getValue());
+            }
+        });
+    };
 
     requirefn = makeFunction(requirefn);
     asyncfn = makeFunction(asyncfn);
