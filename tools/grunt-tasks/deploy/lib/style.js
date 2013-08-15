@@ -50,17 +50,17 @@ exports.init = function (grunt){
         function hasImport(){
             var hasImport = false;
             meta = css.parse(code)[0];
-            code = css.stringify(meta.code, function (node){
+            code = css.stringify(meta.code, function (node, parent){
                 if (node.type === 'import' && node.id) {
                     hasImport = true;
-                    return importNode(node);
+                    return importNode(node, parent);
                 }
             });
             return hasImport;
         }
 
         // import node
-        function importNode(node){
+        function importNode(node, parent){
             // circle imports
             if (grunt.util._.contains(imports, node.id)) return false;
             // cache id
@@ -68,6 +68,10 @@ exports.init = function (grunt){
 
             var fpath, meta;
             if (node.id.charAt(0) === '.') {
+                if (parent && parent.id) {
+                    node.id = normalize(path.join(path.dirname(parent.id), node.id));
+                }
+
                 fpath = normalize(path.join(path.dirname(file.src), node.id));
 
                 if (!/\.css$/.test(fpath)) fpath += '.css';
