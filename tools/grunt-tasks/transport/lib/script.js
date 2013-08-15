@@ -17,12 +17,22 @@ exports.init = function (grunt){
     // exports
     exports.jsParser = function (file, options){
         // file content
+        var meta;
         var fpath = normalize(file.src);
         var dest = normalize(file.dest);
         var code = ast.getAst(file.code);
 
-        // code meta
-        var meta = ast.parseFirst(code);
+        // code meta array
+        var metas = ast.parse(code);
+
+        // have multiple modules
+        if (metas.length > 1) {
+            grunt.fail.warn('File : '.red + fpath.grey + ' contains '.red + metas.length.toString().yellow + ' module !'.red + linefeed);
+        }
+
+        // get the first module
+        meta = metas[0];
+        
         // meta
         if (!meta) {
             grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not a cmd module !'.red + linefeed);
