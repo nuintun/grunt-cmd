@@ -22,7 +22,7 @@ exports.init = function (grunt){
         var code = ast.getAst(file.code);
 
         // code meta array
-        var meta = ast.parse(code);
+        var meta = ast.parseFirst(code);
         
         // meta
         if (!meta) {
