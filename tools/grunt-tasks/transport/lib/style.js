@@ -37,7 +37,6 @@ exports.init = function (grunt){
 
     // the real css parser
     exports.cssParser = function (file, options){
-        var fpath = normalize(file.src);
         var dest = normalize(file.dest);
         var code = file.code;
         var codeAst = css.parse(code);

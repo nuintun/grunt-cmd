@@ -33,7 +33,6 @@ exports.init = function (grunt){
         var meta = css.parse(code)[0];
         var id = meta.id;
         var records = grunt.option('concat-records');
-        var imports = [];
 
         // no id
         if (!id) {
@@ -42,12 +41,12 @@ exports.init = function (grunt){
         }
 
         // for each import
-        while (hasImport()) {
+        while (walk()) {
             // nothing
         }
 
-        // check import
-        function hasImport(){
+        // walk css file and import require css file
+        function walk(){
             var hasImport = false;
             meta = css.parse(code)[0];
             code = css.stringify(meta.code, function (node, parent){
@@ -56,58 +55,35 @@ exports.init = function (grunt){
                     return importNode(node, parent);
                 }
             });
+
             return hasImport;
         }
 
         // import node
         function importNode(node, parent){
-            // circle imports
-            if (grunt.util._.contains(imports, node.id)) return false;
-            // cache id
-            imports.push(node.id);
-
             var fpath, meta;
+
             if (node.id.charAt(0) === '.') {
                 if (parent && parent.id) {
                     node.id = normalize(path.join(path.dirname(parent.id), node.id));
                 }
-
-                fpath = normalize(path.join(path.dirname(file.src), node.id));
-
-                if (!/\.css$/.test(fpath)) fpath += '.css';
-
-                if (!grunt.file.exists(fpath)) {
-                    grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not found !'.red + linefeed);
-                    return false;
-                }
-
-                // get meta
-                meta = css.parse(grunt.file.read(fpath))[0];
-
-                // remove circle imports
-                if (meta.id === id) {
-                    grunt.log.write('>>   '.red + 'File : '.red + fpath.grey
-                        + ' has circle dependencies !'.red + linefeed);
-                    return false;
-                }
-
-                // no meta id
-                if (!meta.id) {
-                    grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' has no defined id !'.red + linefeed);
-                }
-
-                meta.id = node.id;
-
-                return meta;
             }
 
             // find file in librarys
-            fpath = normalize(path.join(options.librarys, options.root, node.id));
+            fpath = normalize(path.join(path.dirname(file.src), node.id));
+
+            // circle imports
+            if (records[node.id]) return false;
+
+            // cache id
+            records[node.id] = node.id;
+
+            // add extname
             if (!/\.css$/.test(fpath)) fpath += '.css';
 
             // file not exists
             if (!grunt.file.exists(fpath)) {
-                grunt.log.write('>>   '.red + 'File : '.red + node.id.grey + ' not found !'.red + linefeed);
+                grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not found !'.red + linefeed);
                 return false;
             }
 
@@ -120,24 +96,13 @@ exports.init = function (grunt){
             }
 
             meta.id = node.id;
-            return meta;
-        }
 
-        // get css code string
-        function getCode(){
-            meta = css.parse(code)[0];
-            return css.stringify(meta.code, function (node){
-                if (node.id) {
-                    if (node.id.charAt(0) === '.') node.id = iduri.absolute(id, node.id);
-                    if (records[node.id]) return false;
-                    records[node.id] = node.id;
-                    return node;
-                }
-            });
+            return meta;
         }
 
         // output file path relative the online resource root
         var output = normalize(path.relative(path.join(options.librarys, options.root), file.src));
+        
         // merger info
         var merger = {
             compressor: {
@@ -150,8 +115,6 @@ exports.init = function (grunt){
             }
         };
 
-        // css code
-        code = getCode();
         // compressor code
         grunt.log.write('>>   '.green + 'Compressoring css'.cyan + ' ...' + linefeed);
         merger.compressor.code.push(format('/*! define %s */', merger.compressor.output), code);
