@@ -23,7 +23,7 @@ exports.init = function (grunt){
 
         // code meta array
         var meta = ast.parseFirst(code);
-
+        
         // meta
         if (!meta) {
             grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not a cmd module !'.red + linefeed);
