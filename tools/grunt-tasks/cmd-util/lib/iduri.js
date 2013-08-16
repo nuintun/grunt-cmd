@@ -6,6 +6,8 @@
 // path
 var path = require('path');
 var HASH_END_RE = /#$/;
+var CURDIR_RE = /^\.[/\\]+/;
+var PROTOCOL_RE = /(:\/)/g;
 var URI_END_RE = /\?|\.(?:css|js|html|htm|json|tpl)$|\/$/i;
 
 // resolve uri to meta info
@@ -42,9 +44,11 @@ exports.resolve = function (uri){
 // make sure the uri to be pretty,
 // for example a//b/../c should be a/c.
 function normalize(uri){
-    var isCurDir = /^\.[/\\]+/.test(uri);
+    var isCurDir = CURDIR_RE.test(uri);
     uri = path.normalize(uri).replace(/\\/g, '/');
-    uri = !isCurDir || (isCurDir && uri.charAt(0) === '.') ? uri : './' + uri;
+    uri = isCurDir ? './' + uri : uri;
+    uri = uri.replace(PROTOCOL_RE, '$1/');
+
     var lastChar = uri.charAt(uri.length - 1);
     if (lastChar === '/') return uri;
     // if it ends with #, we should return the uri without #
@@ -142,9 +146,8 @@ exports.idFromPackage = function (pkg, filename, format){
         return filename.replace(/\.js$/i, '');
     }
     format = format || '{{family}}/{{name}}/{{version}}/{{filename}}';
-    var data = pkg;
-    data.filename = filename.replace(/\.js$/i, '');
-    return normalize(template(format, data));
+    pkg.filename = filename.replace(/\.js$/i, '');
+    return normalize(template(format, pkg));
 };
 
 // validate if the format is the default format
