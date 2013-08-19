@@ -43,7 +43,9 @@ exports.init = function (grunt){
             '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed);
         // modify js file
         code = ast.modify(code, {
-            id: meta.id || iduri.idFromPackage(options.pkg, file.name, options.format),
+            id: function(id){
+                return id || iduri.idFromPackage(options.pkg, file.name, options.format);
+            },
             dependencies: deps,
             require: function (v){
                 return iduri.parseAlias(options.pkg, v);
