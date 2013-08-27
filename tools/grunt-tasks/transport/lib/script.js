@@ -29,7 +29,8 @@ exports.init = function (grunt){
             grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not a cmd module !'.red + linefeed);
             return grunt.file.copy(fpath, dest);
         } else if (metas.length > 1) {
-            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' contains '.red + metas.length.toString().green + ' modules !'.red + linefeed);
+            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' contains '.red 
+                + metas.length.toString().green + ' modules !'.red + linefeed);
         }
 
         var deps = [];
@@ -57,7 +58,8 @@ exports.init = function (grunt){
         // modify js file
         code = ast.modify(code, {
             id: function (id){
-                id && grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' found module id '.red + id.green + ' !'.red + linefeed);
+                id && grunt.log.write('>>   '.red + 'File : '.red + fpath.grey 
+                    + ' found module id '.red + id.green + ' !'.red + linefeed);
                 return id || iduri.idFromPackage(options.pkg, file.name, options.format);
             },
             dependencies: parseDeps,
