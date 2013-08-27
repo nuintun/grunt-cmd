@@ -44,11 +44,12 @@ exports.init = function (grunt){
         // file
         code = css.stringify(codeAst[0].code, function (node){
             if (node.type === 'import' && node.id) {
+                var id = iduri.parseAlias(options.pkg, node.id);
                 if (iduri.isAlias(options.pkg, node.id)) {
-                    node.id = iduri.parseAlias(options.pkg, node.id);
+                    node.id = id;
                     if (!/\.css$/.test(node.id)) node.id += '.css';
                 } else {
-                    if (!node.id.charAt(0) === '.') {
+                    if (!id.charAt(0) === '.') {
                         grunt.log.write('>>   '.red + 'Alias : '.red + node.id.green + ' not defined !'.red + linefeed);
                     }
                 }

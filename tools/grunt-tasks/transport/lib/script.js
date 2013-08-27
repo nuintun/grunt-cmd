@@ -22,38 +22,53 @@ exports.init = function (grunt){
         var code = ast.getAst(file.code);
 
         // code meta array
-        var meta = ast.parseFirst(code);
+        var metas = ast.parse(code);
 
         // meta
-        if (!meta) {
+        if (!metas.length) {
             grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not a cmd module !'.red + linefeed);
             return grunt.file.copy(fpath, dest);
-        } else if (meta.id) {
-            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' found module id !'.red + linefeed);
+        } else if (metas.length > 1) {
+            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' contains '.red + metas.length.toString().green + ' modules !'.red + linefeed);
         }
-        // deps
-        var deps = moduleDependencies(meta, options);
-        grunt.log.write(deps.length ?
-            '>>   '.green + 'Dependencies : '.green
-                + '['.grey + linefeed + '>>   '.green + '   '
-                + deps.map(function (deps){
-                return deps.green;
-            }).join(' ,'.grey + linefeed + '>>   '.green + '   ')
-                + linefeed + '>>   '.green + ']'.grey + linefeed :
-            '>>   '.green + 'Dependencies : '.green + '[]'.grey + linefeed);
+
+        var deps = [];
+        // parse alias
+        function parseDeps(alias){
+            var id = iduri.parseAlias(options.pkg, alias);
+            if (!iduri.isAlias(options.pkg, alias) && id.charAt(0) !== '.' && deps.concat(async).indexOf(alias) > -1) {
+                grunt.log.write('>>   '.red + 'Alias : '.red + alias.green + ' not defined !'.red + linefeed);
+            }
+            deps.indexOf(id) === -1 && deps.push(id);
+            return id;
+        }
+
+        var async = [];
+        // parse async
+        function parseAsync(alias){
+            var id = iduri.parseAlias(options.pkg, alias);
+            if (!iduri.isAlias(options.pkg, alias) && id.charAt(0) !== '.' && deps.concat(async).indexOf(alias) > -1) {
+                grunt.log.write('>>   '.red + 'Alias : '.red + alias.green + ' not defined !'.red + linefeed);
+            }
+            async.indexOf(id) === -1 && async.push(id);
+            return id;
+        }
+
         // modify js file
         code = ast.modify(code, {
-            id: function(id){
+            id: function (id){
+                id && grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' found module id '.red + id.green + ' !'.red + linefeed);
                 return id || iduri.idFromPackage(options.pkg, file.name, options.format);
             },
-            dependencies: deps,
-            require: function (v){
-                return iduri.parseAlias(options.pkg, v);
-            },
-            async: function (v){
-                return iduri.parseAlias(options.pkg, v);
-            }
+            dependencies: parseDeps,
+            require: parseDeps,
+            async: parseAsync
         });
+
+        // log deps info
+        moduleDependencies(deps, 'Dependencies');
+        moduleDependencies(async, 'Async');
+
         // write file
         grunt.file.write(dest, code.print_to_string({
             beautify: true,
@@ -62,19 +77,15 @@ exports.init = function (grunt){
     };
 
     // helpers
-    function moduleDependencies(meta, options){
-        var deps = [];
-        meta.dependencies.forEach(function (id){
-            if (iduri.isAlias(options.pkg, id)) {
-                deps.push(iduri.parseAlias(options.pkg, id));
-            } else {
-                deps.push(iduri.normalize(id));
-                if (id.charAt(0) !== '.') {
-                    grunt.log.write('>>   '.red + 'Alias : '.red + id.green + ' not defined !'.red + linefeed);
-                }
-            }
-        });
-        return deps;
+    function moduleDependencies(deps, type){
+        grunt.log.write(deps.length ?
+            '>>   '.green + (type + ' : ').green
+                + '['.grey + linefeed + '>>   '.green + '   '
+                + deps.map(function (deps){
+                return deps.green;
+            }).join(','.grey + linefeed + '>>   '.green + '   ')
+                + linefeed + '>>   '.green + ']'.grey + linefeed :
+            '>>   '.green + (type + ' : ').green + '[]'.grey + linefeed);
     }
 
     // exports
