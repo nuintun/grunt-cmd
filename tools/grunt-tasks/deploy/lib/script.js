@@ -11,6 +11,7 @@ exports.init = function (grunt){
     var iduri = cmd.iduri;
     var UglifyJS = require('uglify-js');
     var verbose = grunt.option('verbose');
+    var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
     // normalize uri to linux format
     function normalize(uri){
@@ -77,7 +78,7 @@ exports.init = function (grunt){
                     // loop dependencies modules
                     meta.dependencies.forEach(function (id){
                         // relative require
-                        if (id.charAt(0) === '.') {
+                        if (RELPATH_RE.test(id)) {
                             id = iduri.absolute(meta.id, id);
                         }
                         // deep combine
@@ -131,7 +132,7 @@ exports.init = function (grunt){
                     if (meta.id) {
                         // include relative file
                         meta.dependencies.forEach(function (id){
-                            if (id.charAt(0) === '.') {
+                            if (RELPATH_RE.test(id)) {
                                 id = iduri.absolute(meta.id, id);
                                 if (excludes.indexOf(id) === -1 && id !== meta.id) {
                                     var fpath = normalize(path.join(options.librarys,

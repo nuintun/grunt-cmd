@@ -10,6 +10,7 @@ exports.init = function (grunt){
     var iduri = require('../../cmd-util').iduri;
     var css = require('../../cmd-util').css;
     var linefeed = grunt.util.linefeed;
+    var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
     // normalize uri to linux format
     function normalize(uri){
@@ -49,7 +50,7 @@ exports.init = function (grunt){
                     node.id = id;
                     if (!/\.css$/.test(node.id)) node.id += '.css';
                 } else {
-                    if (!id.charAt(0) === '.') {
+                    if (!RELPATH_RE.test(id)) {
                         grunt.log.write('>>   '.red + 'Alias : '.red + node.id.green + ' not defined !'.red + linefeed);
                     }
                 }

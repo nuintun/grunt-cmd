@@ -7,6 +7,7 @@
 var path = require('path');
 var HASH_END_RE = /#$/;
 var CURDIR_RE = /^\.[/\\]+/;
+var RELPATH_RE = /^\.{1,2}[/\\]+/;
 var PROTOCOL_RE = /(:\/)/g;
 var URI_END_RE = /\?|\.(?:css|js|html|htm|json|tpl)$|\/$/i;
 
@@ -80,7 +81,7 @@ exports.relative = function (base, uri){
 // uri is `./base`
 // the result should be `arale/base/1.0.0/base`
 exports.absolute = function (base, uri){
-    if (uri.charAt(0) !== '.') return normalize(uri);
+    if (!RELPATH_RE.test(uri)) return normalize(uri);
     uri = path.join(path.dirname(base), uri);
     return normalize(uri);
 };
@@ -119,7 +120,7 @@ exports.appendext = function (uri){
 
 exports.parseAlias = function (pkg, name){
     // relative name: ./class
-    if (name.charAt(0) === '.') {
+    if (RELPATH_RE.test(name)) {
         name = name.replace(/\.js$/i, '');
     }
     var alias = getAlias(pkg);
@@ -142,7 +143,7 @@ exports.idFromPackage = function (pkg, filename, format){
     if (!filename) {
         filename = pkg.filename || '';
     }
-    if (filename.charAt(0) === '.') {
+    if (RELPATH_RE.test(filename)) {
         return filename.replace(/\.js$/i, '');
     }
     format = format || '{{family}}/{{name}}/{{version}}/{{filename}}';
@@ -177,7 +178,8 @@ function template(format, data){
 
     var placeholder, key, value;
     while (match) {
-        placeholder = match[0], key = match[1];
+        placeholder = match[0];
+        key = match[1];
         value = getData(data, key);
         ret = ret.replace(placeholder, value);
         match = regex.exec(format);

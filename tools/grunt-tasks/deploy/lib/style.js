@@ -9,9 +9,9 @@ exports.init = function (grunt){
     var cmd = require('../../cmd-util');
     var format = require('util').format;
     var css = cmd.css;
-    var iduri = cmd.iduri;
     var cleancss = require('clean-css');
     var verbose = grunt.option('verbose');
+    var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
     // normalize uri to linux format
     function normalize(uri){
@@ -63,7 +63,7 @@ exports.init = function (grunt){
         function importNode(node, parent){
             var fpath, meta;
 
-            if (node.id.charAt(0) === '.') {
+            if (RELPATH_RE.test(id)) {
                 if (parent && parent.id) {
                     node.id = normalize(path.join(path.dirname(parent.id), node.id));
                 }
@@ -102,7 +102,7 @@ exports.init = function (grunt){
 
         // output file path relative the online resource root
         var output = normalize(path.relative(path.join(options.librarys, options.root), file.src));
-        
+
         // merger info
         var merger = {
             compressor: {

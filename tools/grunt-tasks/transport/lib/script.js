@@ -8,6 +8,7 @@ exports.init = function (grunt){
     var ast = require('../../cmd-util').ast;
     var iduri = require('../../cmd-util').iduri;
     var linefeed = grunt.util.linefeed;
+    var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
     // normalize uri to linux format
     function normalize(uri){
@@ -29,7 +30,7 @@ exports.init = function (grunt){
             grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not a cmd module !'.red + linefeed);
             return grunt.file.copy(fpath, dest);
         } else if (metas.length > 1) {
-            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' contains '.red 
+            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' contains '.red
                 + metas.length.toString().green + ' modules !'.red + linefeed);
         }
 
@@ -37,7 +38,7 @@ exports.init = function (grunt){
         // parse alias
         function parseDeps(alias){
             var id = iduri.parseAlias(options.pkg, alias);
-            if (!iduri.isAlias(options.pkg, alias) && id.charAt(0) !== '.' && deps.concat(async).indexOf(alias) > -1) {
+            if (!iduri.isAlias(options.pkg, alias) && !RELPATH_RE.test(id) && deps.concat(async).indexOf(alias) > -1) {
                 grunt.log.write('>>   '.red + 'Alias : '.red + alias.green + ' not defined !'.red + linefeed);
             }
             deps.indexOf(id) === -1 && deps.push(id);
@@ -48,7 +49,7 @@ exports.init = function (grunt){
         // parse async
         function parseAsync(alias){
             var id = iduri.parseAlias(options.pkg, alias);
-            if (!iduri.isAlias(options.pkg, alias) && id.charAt(0) !== '.' && deps.concat(async).indexOf(alias) > -1) {
+            if (!iduri.isAlias(options.pkg, alias) && !RELPATH_RE.test(id) && deps.concat(async).indexOf(alias) > -1) {
                 grunt.log.write('>>   '.red + 'Alias : '.red + alias.green + ' not defined !'.red + linefeed);
             }
             async.indexOf(id) === -1 && async.push(id);
@@ -58,7 +59,7 @@ exports.init = function (grunt){
         // modify js file
         code = ast.modify(code, {
             id: function (id){
-                id && grunt.log.write('>>   '.red + 'File : '.red + fpath.grey 
+                id && grunt.log.write('>>   '.red + 'File : '.red + fpath.grey
                     + ' found module id '.red + id.green + ' !'.red + linefeed);
                 return id || iduri.idFromPackage(options.pkg, file.name, options.format);
             },
