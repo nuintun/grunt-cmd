@@ -63,7 +63,7 @@ exports.init = function (grunt){
         function importNode(node, parent){
             var fpath, meta;
 
-            if (RELPATH_RE.test(id)) {
+            if (RELPATH_RE.test(node.id)) {
                 if (parent && parent.id) {
                     node.id = normalize(path.join(path.dirname(parent.id), node.id));
                 }
