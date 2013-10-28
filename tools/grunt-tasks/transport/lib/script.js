@@ -18,9 +18,11 @@ exports.init = function (grunt){
     // exports
     exports.jsParser = function (file, options){
         // file content
-        var fpath = normalize(file.src);
-        var dest = normalize(file.dest);
-        var code = ast.getAst(file.code);
+        var deps = [],
+            async = [],
+            fpath = normalize(file.src),
+            dest = normalize(file.dest),
+            code = ast.getAst(file.code);
 
         // code meta array
         var metas = ast.parse(code);
@@ -34,9 +36,6 @@ exports.init = function (grunt){
                 + metas.length.toString().green + ' modules !'.red + linefeed);
         }
 
-        var deps = [],
-            async = [];
-            
         // parse alias
         function parseDeps(alias){
             var id = iduri.parseAlias(options.pkg, alias);
