@@ -34,6 +34,7 @@ exports.init = function (grunt){
                 + metas.length.toString().green + ' modules !'.red + linefeed);
         }
         
+        // deps cache
         var deps = [];
         var async = [];
 
