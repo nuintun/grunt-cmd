@@ -34,7 +34,9 @@ exports.init = function (grunt){
                 + metas.length.toString().green + ' modules !'.red + linefeed);
         }
 
-        var deps = [];
+        var deps = [],
+            async = [];
+            
         // parse alias
         function parseDeps(alias){
             var id = iduri.parseAlias(options.pkg, alias);
@@ -45,7 +47,6 @@ exports.init = function (grunt){
             return id;
         }
 
-        var async = [];
         // parse async
         function parseAsync(alias){
             var id = iduri.parseAlias(options.pkg, alias);
