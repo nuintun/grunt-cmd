@@ -6,7 +6,7 @@
   "description": "CMD transport and deploy with grunt !",
   "author": "Newton Niu <yongmiui@gmail.com>",
   "bugs": {
-    "url" : "https://github.com/NewtonNiu/cmd-grunt/issues"
+    "url" : "https://github.com/NewtonNiu/cmd-grunt/issues",
     "email": "yongmiui@gmail.com"
   }
   "engines": {
