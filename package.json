@@ -2,12 +2,20 @@
   "family": "cmd-grunt",
   "name": "cmd-grunt",
   "version": "1.0.0",
+  "homepage": 'https://github.com/NewtonNiu/cmd-grunt',
   "description": "CMD transport and deploy with grunt !",
   "author": "Newton Niu <yongmiui@gmail.com>",
+  "bugs": {
+    "url" : "https://github.com/NewtonNiu/cmd-grunt/issues"
+    "email" "yongmiui@gmail.com"
+  }
   "engines": {
     "node": ">= 0.6.0"
   },
-  "repository": {},
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/NewtonNiu/cmd-grunt.git"
+  },
   "dependencies": {},
   "devDependencies": {
     "grunt": ">=0.4.1",
