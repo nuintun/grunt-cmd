@@ -8,7 +8,7 @@
   "bugs": {
     "url" : "https://github.com/NewtonNiu/cmd-grunt/issues",
     "email": "yongmiui@gmail.com"
-  }
+  },
   "engines": {
     "node": ">= 0.6.0"
   },
