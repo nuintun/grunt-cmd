@@ -41,7 +41,7 @@ exports.init = function (grunt){
         // parse alias
         function parseDeps(alias){
             var id = iduri.parseAlias(options.pkg, alias);
-            if (!iduri.isAlias(options.pkg, alias) && !RELPATH_RE.test(id) && deps.concat(async).indexOf(alias) > -1) {
+            if (!iduri.isAlias(options.pkg, alias) && !RELPATH_RE.test(id) && deps.concat(async).indexOf(id) === -1) {
                 grunt.log.write('>>   '.red + 'Alias : '.red + alias.green + ' not defined !'.red + linefeed);
             }
             deps.indexOf(id) === -1 && deps.push(id);
@@ -51,7 +51,7 @@ exports.init = function (grunt){
         // parse async
         function parseAsync(alias){
             var id = iduri.parseAlias(options.pkg, alias);
-            if (!iduri.isAlias(options.pkg, alias) && !RELPATH_RE.test(id) && deps.concat(async).indexOf(alias) > -1) {
+            if (!iduri.isAlias(options.pkg, alias) && !RELPATH_RE.test(id) && deps.concat(async).indexOf(id) === -1) {
                 grunt.log.write('>>   '.red + 'Alias : '.red + alias.green + ' not defined !'.red + linefeed);
             }
             async.indexOf(id) === -1 && async.push(id);
