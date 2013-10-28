@@ -6,15 +6,15 @@
   "description": "CMD transport and deploy with grunt !",
   "author": "Newton Niu <yongmiui@gmail.com>",
   "bugs": {
-    "url" : "https://github.com/NewtonNiu/cmd-grunt/issues",
+    "url": "https://github.com/NewtonNiu/cmd-grunt/issues",
     "email": "yongmiui@gmail.com"
   },
   "engines": {
     "node": ">= 0.6.0"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/NewtonNiu/cmd-grunt.git"
+    "type": "git",
+    "url": "https://github.com/NewtonNiu/cmd-grunt.git"
   },
   "dependencies": {},
   "devDependencies": {
