@@ -4,14 +4,10 @@
   "version": "1.0.0",
   "description": "CMD transport and deploy with grunt !",
   "author": "Newton Niu <yongmiui@gmail.com>",
-  "dependencies": {
-    "grunt": "~0.4.1",
-    "clean-css": "~0.10.2",
-    "uglify-js": "~2.2.5"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "clean-css": "~0.10.2",
-    "uglify-js": "~2.2.5"
+    "grunt": ">=0.4.1",
+    "clean-css": ">=0.10.2",
+    "uglify-js": ">=2.2.5"
   }
 }
