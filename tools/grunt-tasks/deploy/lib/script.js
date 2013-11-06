@@ -10,7 +10,7 @@ exports.init = function (grunt){
     var ast = cmd.ast;
     var iduri = cmd.iduri;
     var UglifyJS = require('uglify-js');
-    var log = require('../../log');
+    var log = require('../../log').init(grunt);
     var verbose = grunt.option('verbose');
     var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
