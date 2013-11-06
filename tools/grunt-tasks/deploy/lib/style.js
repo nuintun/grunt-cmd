@@ -18,6 +18,16 @@ exports.init = function (grunt){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
+    // uncompressor debug css
+    function modify(code){
+        return new CleanCss({
+            keepSpecialComments: '*',
+            keepBreaks: true,
+            processImport: false,
+            benchmark: verbose
+        }).minify(code);
+    }
+
     // compressor css
     function compressor(code){
         return new CleanCss({
@@ -118,15 +128,18 @@ exports.init = function (grunt){
 
         // compressor code
         grunt.log.write('>>   '.green + 'Compressoring css'.cyan + ' ...' + linefeed);
-        merger.compressor.code.push(format('/*! define %s */', merger.compressor.output), code);
-        merger.compressor.code = merger.compressor.code.join(linefeed);
-        merger.compressor.code = compressor(merger.compressor.code);
+        merger.compressor.code.push(format('/*! define %s */', merger.compressor.output), linefeed, code);
+        merger.compressor.code = compressor(merger.compressor.code.join(linefeed));
         grunt.log.write('>>   '.green + 'Compressor css success'.cyan + ' ...').ok();
-        // create debug file
-        grunt.log.write('>>   '.green + 'Creating debug css'.cyan + ' ...' + linefeed);
-        merger.uncompressor.code.push(format('/*! define %s */', merger.uncompressor.output), code);
-        merger.uncompressor.code = merger.uncompressor.code.join(linefeed);
-        grunt.log.write('>>   '.green + 'Create debug css success'.cyan + ' ...').ok();
+
+        if (options.debugfile) {
+            // create debug file
+            grunt.log.write('>>   '.green + 'Creating debug css'.cyan + ' ...' + linefeed);
+            merger.uncompressor.code.push(format('/*! define %s */', merger.uncompressor.output), linefeed, code);
+            merger.uncompressor.code = modify(merger.uncompressor.code.join(linefeed));
+            grunt.log.write('>>   '.green + 'Create debug css success'.cyan + ' ...').ok();
+        }
+
         return merger;
     };
 

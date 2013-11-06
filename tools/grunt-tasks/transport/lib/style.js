@@ -62,7 +62,7 @@ exports.init = function (grunt){
         // transport css
         var id = iduri.idFromPackage(options.pkg, file.name, options.format);
         var banner = format('/*! define %s */', id);
-        grunt.file.write(dest, [banner, code].join('\n'));
+        grunt.file.write(dest, [banner, code].join(linefeed));
     };
 
     return exports;
@@ -70,18 +70,22 @@ exports.init = function (grunt){
 
 // helpers
 function css2js(code, id){
-    var cleancss = require('clean-css');
+    var CleanCss = require('clean-css');
+    var grunt = require('grunt');
+    var linefeed = grunt.util.linefeed;
     // transform css to js
     // spmjs/spm#581
     var tpl = [
         'define("%s", [], function() {',
         "seajs.importStyle('%s')",
-        '});'].join('\n');
+        '});'].join(linefeed);
 
-    code = cleancss.process(code, {
+    code = new CleanCss({
         keepSpecialComments: 0,
-        removeEmpty: true
-    });
+        processImport: false,
+        benchmark: verbose
+    }).minify(code);
+
     // spmjs/spm#651
     code = code.split(/\r\n|\r|\n/).map(function (line){
         return line.replace(/\\/g, '\\\\');

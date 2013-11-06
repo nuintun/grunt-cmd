@@ -165,21 +165,26 @@ exports.init = function (grunt){
         // create minify file
         grunt.log.write('>>   '.green + 'Compressoring script'.cyan + ' ...' + linefeed);
         var compressorAst = compressor(merger.compressor.code);
+        merger.compressor.code = compressorAst.code + linefeed;
         grunt.log.write('>>   '.green + 'Compressor script success'.cyan + ' ...').ok();
-        merger.compressor.code = compressorAst.code + linefeed + '/*' + linefeed + '//@ sourceMappingURL='
-            + iduri.basename(merger.compressor.output) + '.map' + linefeed + '*/';
-        // create source map
-        grunt.log.write('>>   '.green + 'Creating script sourcemap'.cyan + ' ...' + linefeed);
-        // sourcemap info
-        merger.sourcemap = {
-            output: merger.compressor.output + '.map',
-            code: fixSourcemap(compressorAst.map, merger.compressor.output)
-        };
-        grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
-        // create debug file
-        grunt.log.write('>>   '.green + 'Creating debug script'.cyan + ' ...' + linefeed);
-        merger.uncompressor.code = modify(merger.uncompressor.code, options.parsers);
-        grunt.log.write('>>   '.green + 'Create debug script success'.cyan + ' ...').ok();
+
+        if (options.debugfile) {
+            // create source map
+            grunt.log.write('>>   '.green + 'Creating script sourcemap'.cyan + ' ...' + linefeed);
+            merger.compressor.code += '/*' + linefeed + '//@ sourceMappingURL='
+                + iduri.basename(merger.compressor.output) + '.map' + linefeed + '*/';
+            // sourcemap info
+            merger.sourcemap = {
+                output: merger.compressor.output + '.map',
+                code: fixSourcemap(compressorAst.map, merger.compressor.output)
+            };
+            grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
+            // create debug file
+            grunt.log.write('>>   '.green + 'Creating debug script'.cyan + ' ...' + linefeed);
+            merger.uncompressor.code = modify(merger.uncompressor.code, options.parsers);
+            grunt.log.write('>>   '.green + 'Create debug script success'.cyan + ' ...').ok();
+        }
+
         // return merger result
         return merger;
     };

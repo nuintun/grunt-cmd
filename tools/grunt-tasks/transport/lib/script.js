@@ -28,12 +28,13 @@ exports.init = function (grunt){
         // meta
         if (!metas.length) {
             grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not a cmd module !'.red + linefeed);
-            return grunt.file.copy(fpath, dest);
+            grunt.file.copy(fpath, dest);
+            return;
         } else if (metas.length > 1) {
             grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' contains '.red
                 + metas.length.toString().green + ' modules !'.red + linefeed);
         }
-        
+
         // deps cache
         var deps = [];
         var async = [];

@@ -51,7 +51,10 @@ module.exports = function (grunt){
             // set librarys dir
             options.root = grunt.util._.isString(options.root) ? options.root : 'script';
             // if donot set cwd warn it
-            if (!file.cwd) return grunt.log.write('>> '.red + 'Please set cwd !'.red);
+            if (!file.cwd) {
+                grunt.log.write('>> '.red + 'Please set cwd !'.red);
+                return;
+            }
             // for each files
             file.src.forEach(function (fpath){
                 // format fpath
@@ -76,7 +79,8 @@ module.exports = function (grunt){
                 fpath = normalize(path.join(file.cwd, fpath));
                 // file not found
                 if (!grunt.file.exists(fpath)) {
-                    return grunt.log.write('>> '.red + 'File : '.red + fpath.grey + ' not found !'.red + linefeed);
+                    grunt.log.write('>> '.red + 'File : '.red + fpath.grey + ' not found !'.red + linefeed);
+                    return;
                 }
                 // set dest file
                 var dest = normalize(path.join(
@@ -92,7 +96,8 @@ module.exports = function (grunt){
                     // copy file
                     grunt.log.write('>> '.green + 'Transporting '.cyan + fpath.grey + ' ...' + linefeed);
                     grunt.file.copy(fpath, dest);
-                    return grunt.log.write('>> '.green + 'Transport '.cyan + dest.grey + ' ...').ok();
+                    grunt.log.write('>> '.green + 'Transport '.cyan + dest.grey + ' ...').ok();
+                    return;
                 }
                 // code
                 var code = grunt.file.read(fpath);
