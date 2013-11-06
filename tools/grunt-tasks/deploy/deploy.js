@@ -95,8 +95,8 @@ module.exports = function (grunt){
                     // debug file
                     dest = normalize(path.join(options.output, merger.uncompressor.output));
                     grunt.file.write(dest, banner + merger.uncompressor.code);
+                    grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
                 }
-                grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
             });
         });
     });
