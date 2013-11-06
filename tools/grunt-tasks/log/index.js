@@ -3,7 +3,6 @@
  * author : Newton
  **/
 exports.init = function (grunt){
-    var grunt = require('grunt');
     var linefeed = grunt.util.linefeed;
     var slice = Array.prototype.slice;
     
