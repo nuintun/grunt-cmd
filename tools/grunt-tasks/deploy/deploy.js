@@ -37,8 +37,6 @@ module.exports = function (grunt){
         this.files.forEach(function (file){
             file.src.forEach(function (fpath){
                 fpath = normalize(fpath);
-                // reset records
-                grunt.option('concat-records', {});
                 // set librarys dir
                 options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
                 // set librarys dir
