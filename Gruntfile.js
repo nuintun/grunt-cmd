@@ -1,5 +1,5 @@
 /**
- * GruntFile
+ * Gruntfile
  * 打包合并配置文件
  */
 module.exports = function (grunt){
@@ -63,20 +63,24 @@ module.exports = function (grunt){
 
     // 获取整站公用脚本common.js
     function getCommon(fpath, excludes){
-        var common = jsConcat({src: fpath}, {
-            librarys: '.librarys',
-            root: 'script',
-            excludes: Array.isArray(excludes) ? excludes : [],
-            include: '*',
-            debugfile: false
-        });
+        var modules = [],
+            common = jsConcat({src: fpath}, {
+                librarys: '.librarys',
+                root: 'script',
+                excludes: Array.isArray(excludes) ? excludes : [],
+                include: '*',
+                debugfile: false
+            });
 
         // 获取公共脚本总已经包含的模块，页面脚本要排除
         cmd.ast.parse(common.uncompressor.code).forEach(function (meta){
-            excludes.push(meta.id);
+            modules.push(meta.id);
         });
 
-        return common.compressor.code;
+        return {
+            modules: modules,
+            code: common.compressor.code
+        };
     }
 
     // 初始化seajs环境
@@ -103,11 +107,15 @@ module.exports = function (grunt){
                         fromString: true,
                         warnings: grunt.option('verbose')
                     }), // minify code
+                    common = getCommon('.librarys/script/view/common.js'),
                     code = [
                         banner,
                         minify.code,
-                        getCommon('.librarys/script/view/common.js')
+                        common.code
                     ].join(linefeed);
+
+                // 排除common.js中已经包含的模块
+                excludes = excludes.concat(common.modules);
 
                 fpath = path.join('js', path.relative(root, fpath)).replace(/\\/g, '/');
 
@@ -244,7 +252,9 @@ module.exports = function (grunt){
                 root: 'script',
                 banner: JSBanner,
                 include: '*',
-                excludes: excludes,
+                excludes: function (){
+                    return excludes;
+                },
                 debugfile: debugfile
             },
             // 非脚本文件处理

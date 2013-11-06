@@ -46,9 +46,9 @@ module.exports = function (grunt){
                 include = grunt.util._.isFunction(include) ? include(fpath) : include;
                 options.include = include === '.' || include === '*' ? include : 'default';
                 // file excludes
-                var excludes = options.excludes || [];
+                var excludes = options.excludes;
                 excludes = grunt.util._.isFunction(excludes) ? excludes(fpath) : excludes;
-                excludes = Array.isArray(options.excludes) ? excludes : [].push(excludes);
+                excludes = Array.isArray(excludes) ? excludes : [].push(excludes);
                 options.excludes = grunt.util._.uniq(excludes);
                 // real file path
                 var dest = normalize(path.join(options.output, fpath));
