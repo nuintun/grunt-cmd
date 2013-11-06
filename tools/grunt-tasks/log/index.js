@@ -2,27 +2,23 @@
  * log
  * author : Newton
  **/
-var grunt = require('grunt');
-var linefeed = grunt.util.linefeed;
-var slice = Array.prototype.slice;
-
-// warn log
-exports.warn = function (){
-    var args = slice.call(arguments);
-    var message = args.join(' ');
-    grunt.log.write('>> '.red + message + linefeed);
-};
-
-// info log
-exports.info = function (){
-    var args = slice.call(arguments);
-    var message = args.join(' ');
-    grunt.log.write('>> '.green + message + ' ...' + linefeed);
-};
-
-// ok log
-exports.ok = function (){
-    var args = slice.call(arguments);
-    var message = args.join(' ');
-    grunt.log.write('>> '.green + message + ' ...').ok();
+exports.init = function (grunt){
+    var grunt = require('grunt');
+    var linefeed = grunt.util.linefeed;
+    var slice = Array.prototype.slice;
+    
+    // warn log
+    exports.warn = function (){
+        grunt.log.write('>> '.red + slice.call(arguments).join(' ') + linefeed);
+    };
+    
+    // info log
+    exports.info = function (){
+        grunt.log.write('>> '.green + slice.call(arguments).join(' ') + ' ...' + linefeed);
+    };
+    
+    // ok log
+    exports.ok = function (){
+        grunt.log.write('>> '.green + slice.call(arguments).join(' ') + ' ...').ok();
+    };
 };
