@@ -12,7 +12,7 @@ module.exports = function (grunt){
         modify = ScriptDeploy.modify,
         configAst = UglifyJS.parse(grunt.file.read('script/config.js')),
         pkg = {alias: getAlias(configAst)},
-        excludes = [pkg.alias['$']],
+        excludes = [],
         linefeed = grunt.util.linefeed,
         CSSBanner = [
             '/*!',
