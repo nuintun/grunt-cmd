@@ -146,7 +146,7 @@ module.exports = function (grunt){
     });
 
     // 修复资源引用路径
-    grunt.registerTask('fixpath', 'Fix resource path.', function (){
+    grunt.registerTask('pathfix', 'Resource path fix.', function (){
         grunt.log.write('>> '.green + 'Fixing resource path'.cyan + ' ...' + grunt.util.linefeed);
         grunt.file.recurse('.librarys', function (fpath){
             if (!grunt.file.isFile(fpath)) return;
@@ -337,5 +337,5 @@ module.exports = function (grunt){
     grunt.loadTasks('tools/grunt-tasks/transport');
     grunt.loadTasks('tools/grunt-tasks/deploy');
     grunt.loadTasks('tools/grunt-tasks/clean');
-    grunt.registerTask('default', ['transport', 'fixpath', 'seajs', 'deploy', 'clean']);
+    grunt.registerTask('default', ['transport', 'pathfix', 'seajs', 'deploy', 'clean']);
 };
