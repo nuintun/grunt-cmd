@@ -33,7 +33,8 @@ module.exports = function (grunt){
     function getAlias(ast){
         var alias = {},
             walker = new UglifyJS.TreeWalker(function (node, descend){
-                if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs' && node.expression.property === 'config' && node.args.length) {
+                if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs' 
+                    && node.expression.property === 'config' && node.args.length) {
                     node.args[0].properties.forEach(function (node){
                         if (node.key === 'alias') {
                             node.value.properties.forEach(function (node){
@@ -52,7 +53,8 @@ module.exports = function (grunt){
     // 获取线上配置文件config.js
     function getConfig(ast){
         var trans = new UglifyJS.TreeTransformer(function (node, descend){
-            if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs' && node.expression.property === 'config' && node.args.length) {
+            if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs' 
+                && node.expression.property === 'config' && node.args.length) {
                 node.args[0].properties = node.args[0].properties.filter(function (node){
                     return node.key !== 'alias';
                 });
