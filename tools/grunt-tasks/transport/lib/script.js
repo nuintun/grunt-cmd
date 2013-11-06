@@ -7,6 +7,7 @@ exports.init = function (grunt){
     var path = require('path');
     var ast = require('../../cmd-util').ast;
     var iduri = require('../../cmd-util').iduri;
+    var log = require('../../log');
     var linefeed = grunt.util.linefeed;
     var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
@@ -27,12 +28,11 @@ exports.init = function (grunt){
 
         // meta
         if (!metas.length) {
-            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' not a cmd module !'.red + linefeed);
+            log.warn('  File :'.red, fpath.grey, 'not a cmd module !'.red);
             grunt.file.copy(fpath, dest);
             return;
         } else if (metas.length > 1) {
-            grunt.log.write('>>   '.red + 'File : '.red + fpath.grey + ' contains '.red
-                + metas.length.toString().green + ' modules !'.red + linefeed);
+            log.warn('  File :'.red, fpath.grey, 'contains'.red, metas.length.toString().green, 'modules !'.red);
         }
 
         // deps cache
@@ -43,7 +43,7 @@ exports.init = function (grunt){
         function parseDeps(alias){
             var id = iduri.parseAlias(options.pkg, alias);
             if (!iduri.isAlias(options.pkg, alias) && !RELPATH_RE.test(id) && deps.concat(async).indexOf(id) === -1) {
-                grunt.log.write('>>   '.red + 'Alias : '.red + alias.green + ' not defined !'.red + linefeed);
+                log.warn('  Alias :'.red, alias.green, 'not defined !'.red);
             }
             deps.indexOf(id) === -1 && deps.push(id);
             return id;
@@ -53,7 +53,7 @@ exports.init = function (grunt){
         function parseAsync(alias){
             var id = iduri.parseAlias(options.pkg, alias);
             if (!iduri.isAlias(options.pkg, alias) && !RELPATH_RE.test(id) && deps.concat(async).indexOf(id) === -1) {
-                grunt.log.write('>>   '.red + 'Alias : '.red + alias.green + ' not defined !'.red + linefeed);
+                log.warn('  Alias :'.red, alias.green, 'not defined !'.red);
             }
             async.indexOf(id) === -1 && async.push(id);
             return id;
@@ -62,8 +62,7 @@ exports.init = function (grunt){
         // modify js file
         code = ast.modify(code, {
             id: function (id){
-                id && grunt.log.write('>>   '.red + 'File : '.red + fpath.grey
-                    + ' found module id '.red + id.green + ' !'.red + linefeed);
+                id && log.warn('  File :'.red, fpath.grey, 'found module id'.red, id.green, '!'.red);
                 return id || iduri.idFromPackage(options.pkg, file.name, options.format);
             },
             dependencies: parseDeps,
@@ -86,10 +85,10 @@ exports.init = function (grunt){
     function moduleDependencies(deps, type){
         grunt.log.write(deps.length ?
             '>>   '.green + (type + ' : ').green
-                + '['.grey + linefeed + '>>   '.green + '   '
+                + '['.grey + linefeed + '>>   '.green + '  '
                 + deps.map(function (deps){
                 return deps.green;
-            }).join(','.grey + linefeed + '>>   '.green + '   ')
+            }).join(','.grey + linefeed + '>>   '.green + '  ')
                 + linefeed + '>>   '.green + ']'.grey + linefeed :
             '>>   '.green + (type + ' : ').green + '[]'.grey + linefeed);
     }

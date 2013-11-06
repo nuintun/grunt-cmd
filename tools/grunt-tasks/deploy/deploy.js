@@ -7,6 +7,7 @@ module.exports = function (grunt){
     var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
     var style = require('./lib/style').init(grunt);
+    var log = require('../log');
 
     // normalize uri to linux format
     function normalize(uri){
@@ -55,20 +56,20 @@ module.exports = function (grunt){
                 fpath = normalize(path.join(file.cwd, fpath));
                 // file not found
                 if (!grunt.file.exists(fpath)) {
-                    grunt.log.write('>> '.red + 'File '.red + fpath.grey + ' not found'.red + linefeed);
+                    log.warn('File'.red, fpath.grey, 'not found !'.red);
                     return;
                 }
                 // extname
                 var extname = path.extname(fpath).toLowerCase();
                 // none parsers
                 if (!options.parsers[extname]) {
-                    grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + ' ...' + linefeed);
+                    log.info('Deploying'.cyan, fpath.grey);
                     grunt.file.copy(fpath, dest);
-                    grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
+                    log.ok('Deploy to'.cyan, dest.grey);
                     return;
                 }
                 // start merger
-                grunt.log.write('>> '.green + 'Deploying '.cyan + fpath.grey + ' ...' + linefeed);
+                log.info('Deploying'.cyan, fpath.grey);
                 // merger file start
                 var merger = options.parsers[extname]({
                     src: fpath
@@ -82,18 +83,18 @@ module.exports = function (grunt){
                 // minify file
                 dest = normalize(path.join(options.output, merger.compressor.output));
                 grunt.file.write(dest, banner + merger.compressor.code);
-                grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
+                log.ok('Deploy to'.cyan, dest.grey);
                 if (options.debugfile) {
                     // source map, for the online debug, now chrome support sourcemap
                     if (merger.sourcemap) {
                         dest = normalize(path.join(options.output, merger.sourcemap.output));
                         grunt.file.write(dest, merger.sourcemap.code);
-                        grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
+                        log.ok('Deploy to'.cyan, dest.grey);
                     }
                     // debug file
                     dest = normalize(path.join(options.output, merger.uncompressor.output));
                     grunt.file.write(dest, banner + merger.uncompressor.code);
-                    grunt.log.write('>> '.green + 'Deploy '.cyan + dest.grey + ' ...').ok();
+                    log.ok('Deploy to'.cyan, dest.grey);
                 }
             });
         });

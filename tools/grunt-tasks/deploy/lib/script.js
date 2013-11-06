@@ -10,6 +10,7 @@ exports.init = function (grunt){
     var ast = cmd.ast;
     var iduri = cmd.iduri;
     var UglifyJS = require('uglify-js');
+    var log = require('../../log');
     var verbose = grunt.option('verbose');
     var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
@@ -33,6 +34,9 @@ exports.init = function (grunt){
         });
     }
 
+    // exports modify api
+    exports.modify = modify;
+
     // compressor code
     function compressor(code){
         return UglifyJS.minify(code, {
@@ -53,6 +57,8 @@ exports.init = function (grunt){
     // combine, not include the excludes file
     // default read file from fpath, but you can set from code string by set fromstr args
     function combine(fpath, options){
+        // reset records
+        grunt.option('concat-records', {});
         var stack = [];
         var excludes = options.excludes;
         var records = grunt.option('concat-records');
@@ -64,7 +70,7 @@ exports.init = function (grunt){
             records[fpath] = true;
             // file not existe
             if (!grunt.file.exists(fpath)) {
-                grunt.log.write('>>   '.red + 'Can not find module : '.red + fpath.grey + ' !'.red + linefeed);
+                log.warn('  Can not find module :'.red, fpath.grey, '!'.red);
                 return;
             }
             // deps, excludes, records, code, meta      
@@ -88,7 +94,7 @@ exports.init = function (grunt){
                     });
                 } else {
                     // module has no module id, it will not work, return it
-                    grunt.log.write('>>   '.red + 'Module : '.red + fpath.grey + ' has no module id !'.red + linefeed);
+                    log.warn('  Module :'.red, fpath.grey, 'has no module id !'.red);
                 }
             }
 
@@ -102,6 +108,9 @@ exports.init = function (grunt){
         // return stack
         return stack;
     }
+
+    // exports combine api
+    exports.combine = combine;
 
     // exports js concat
     exports.jsConcat = function (file, options){
@@ -140,16 +149,14 @@ exports.init = function (grunt){
                                     if (grunt.file.exists(fpath)) {
                                         stack.push(grunt.file.read(fpath));
                                     } else {
-                                        grunt.log.write('>>   '.red + 'Can not find module : '.red
-                                            + fpath.grey + ' !'.red + linefeed);
+                                        log.warn('  Can not find module :'.red, fpath.grey, '!'.red);
                                     }
                                 }
                             }
                         });
                     } else {
                         // module has no module id
-                        grunt.log.write('>>   '.red + 'Module : '.red + fpath.grey
-                            + ' has no module id !'.red + linefeed);
+                        log.warn('  Module :'.red, fpath.grey, 'has no module id !'.red);
                     }
                 }
                 stack.push(code);
@@ -165,14 +172,15 @@ exports.init = function (grunt){
         // get merger code
         merger.compressor.code = merger.uncompressor.code = stack.join(linefeed);
         // create minify file
-        grunt.log.write('>>   '.green + 'Compressoring script'.cyan + ' ...' + linefeed);
+        log.info('  Compressoring script'.cyan);
         var compressorAst = compressor(merger.compressor.code);
         merger.compressor.code = compressorAst.code + linefeed;
-        grunt.log.write('>>   '.green + 'Compressor script success'.cyan + ' ...').ok();
+        log.ok('  Compressoring script success'.cyan);
 
         if (options.debugfile) {
             // create source map
             grunt.log.write('>>   '.green + 'Creating script sourcemap'.cyan + ' ...' + linefeed);
+            log.info('  Creating script sourcemap'.cyan);
             merger.compressor.code += '/*' + linefeed + '//@ sourceMappingURL='
                 + iduri.basename(merger.compressor.output) + '.map' + linefeed + '*/';
             // sourcemap info
@@ -180,11 +188,11 @@ exports.init = function (grunt){
                 output: merger.compressor.output + '.map',
                 code: fixSourcemap(compressorAst.map, merger.compressor.output)
             };
-            grunt.log.write('>>   '.green + 'Create script sourcemap success'.cyan + ' ...').ok();
+            log.ok('  Create script sourcemap success'.cyan);
             // create debug file
-            grunt.log.write('>>   '.green + 'Creating debug script'.cyan + ' ...' + linefeed);
+            log.info('  Creating debug script'.cyan);
             merger.uncompressor.code = modify(merger.uncompressor.code, options.parsers);
-            grunt.log.write('>>   '.green + 'Create debug script success'.cyan + ' ...').ok();
+            log.ok('  Create debug script success'.cyan);
         }
 
         // return merger result

@@ -6,22 +6,24 @@ module.exports = function (grunt){
     var path = require('path'),
         UglifyJS = require('uglify-js'),
         cmd = require('./tools/grunt-tasks/cmd-util'),
-        debugfile = false,
-        jsConcat = require('./tools/grunt-tasks/deploy/lib/script').init(grunt).jsConcat,
+        debugfile = true,
+        scriptDeploy = require('./tools/grunt-tasks/deploy/lib/script').init(grunt),
+        combine = scriptDeploy.combine,
+        modify = scriptDeploy.modify,
         configAst = UglifyJS.parse(grunt.file.read('script/config.js')),
         pkg = {alias: getAlias(configAst)},
         excludes = [pkg.alias['$']],
         linefeed = grunt.util.linefeed,
         CSSBanner = [
             '/*!',
-            ' * Project: Style',
+            ' * Project: css assets',
             ' * Author: newton',
             ' * Date: <%= grunt.template.today("yyyy-mm-dd") %>',
             ' */'
         ].join(linefeed),
         JSBanner = [
             '/*!',
-            ' * Project: Script',
+            ' * Project: js assets',
             ' * Author: newton',
             ' * Date: <%= grunt.template.today("yyyy-mm-dd") %>',
             ' */'
@@ -64,22 +66,20 @@ module.exports = function (grunt){
     // 获取整站公用脚本common.js
     function getCommon(fpath, excludes){
         var modules = [],
-            common = jsConcat({src: fpath}, {
+            common = combine(fpath, {
                 librarys: '.librarys',
                 root: 'script',
-                excludes: Array.isArray(excludes) ? excludes : [],
-                include: '*',
-                debugfile: false
-            });
+                excludes: Array.isArray(excludes) ? excludes : []
+            }).join(linefeed);
 
         // 获取公共脚本总已经包含的模块，页面脚本要排除
-        cmd.ast.parse(common.uncompressor.code).forEach(function (meta){
+        cmd.ast.parse(common).forEach(function (meta){
             modules.push(meta.id);
         });
 
         return {
             modules: modules,
-            code: common.compressor.code
+            code: common
         };
     }
 
@@ -92,7 +92,8 @@ module.exports = function (grunt){
             if (/\/sea\.js$/i.test(fpath)) {
                 var seajs = grunt.file.read(fpath),
                     config = getConfig(configAst),
-                    combo = seajs + linefeed + config + linefeed,
+                    common = getCommon('.librarys/script/view/common.js'),
+                    combo = seajs + linefeed + config + linefeed + common.code,
                     now = new Date(), // 当前时间对象
                     banner = [
                         '/*!',
@@ -101,17 +102,14 @@ module.exports = function (grunt){
                         ' * Date: ' + now.toISOString().replace(/(\d+-\d+-\d+).+/, '$1'),
                         ' */'
                     ].join(linefeed), // banner
-                    ast = UglifyJS.parse(combo), // ast
                     minify = UglifyJS.minify(combo, {
                         outSourceMap: '{{file}}',
                         fromString: true,
                         warnings: grunt.option('verbose')
                     }), // minify code
-                    common = getCommon('.librarys/script/view/common.js'),
                     code = [
                         banner,
-                        minify.code,
-                        common.code
+                        minify.code
                     ].join(linefeed);
 
                 // 排除common.js中已经包含的模块
@@ -136,10 +134,7 @@ module.exports = function (grunt){
                         .replace('"sources":["?"]', '"sources":["sea-debug.js"]'); // source map
                     grunt.file.write(fpath + '.map', map);
                     // 生成sea-debug.js
-                    grunt.file.write(fpath.replace(/\.js$/i, '-debug.js'), ast.print_to_string({
-                        beautify: true,
-                        comments: true
-                    }));
+                    grunt.file.write(fpath.replace(/\.js$/i, '-debug.js'), modify(combo, {'.js': true, '.css': true}));
                 }
             }
             grunt.file.copy(fpath, path.join('js', path.relative(root, fpath)).replace(/\\/g, '/'));

@@ -7,6 +7,7 @@ module.exports = function (grunt){
     var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
     var style = require('./lib/style').init(grunt);
+    var log = require('../log');
 
     // normalize uri to linux format
     function normalize(uri){
@@ -77,9 +78,10 @@ module.exports = function (grunt){
                 options.pkg.name = dirs.shift() || '';
                 options.pkg.version = dirs.join('/');
                 fpath = normalize(path.join(file.cwd, fpath));
+
                 // file not found
                 if (!grunt.file.exists(fpath)) {
-                    grunt.log.write('>> '.red + 'File : '.red + fpath.grey + ' not found !'.red + linefeed);
+                    log.warn('File :'.red, fpath.grey, 'not found !'.red);
                     return;
                 }
                 // set dest file
@@ -94,9 +96,9 @@ module.exports = function (grunt){
                 // if not has fileparsers copy file
                 if (!fileparsers) {
                     // copy file
-                    grunt.log.write('>> '.green + 'Transporting '.cyan + fpath.grey + ' ...' + linefeed);
+                    log.info('Transporting'.cyan, fpath.grey);
                     grunt.file.copy(fpath, dest);
-                    grunt.log.write('>> '.green + 'Transport '.cyan + dest.grey + ' ...').ok();
+                    log.ok('Transport to'.cyan, dest.grey);
                     return;
                 }
                 // code
@@ -107,7 +109,7 @@ module.exports = function (grunt){
                 }
 
                 // file info
-                grunt.log.write('>> '.green + 'Transporting '.cyan + fpath.grey + ' ...' + linefeed);
+                log.info('Transporting'.cyan, fpath.grey);
                 // fileparsers
                 fileparsers({
                     src: fpath,
@@ -115,7 +117,7 @@ module.exports = function (grunt){
                     name: fname,
                     dest: dest
                 }, options);
-                grunt.log.write('>> '.green + 'Transport '.cyan + dest.grey + ' ...').ok();
+                log.ok('Transport to'.cyan, dest.grey);
             });
         });
     });
