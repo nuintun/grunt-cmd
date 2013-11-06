@@ -19,7 +19,7 @@
   "dependencies": {},
   "devDependencies": {
     "grunt": ">=0.4.1",
-    "clean-css": ">=0.10.2",
+    "clean-css": ">=2.0.0",
     "uglify-js": ">=2.2.5"
   }
 }
