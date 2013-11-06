@@ -105,6 +105,8 @@ exports.init = function (grunt){
 
     // exports js concat
     exports.jsConcat = function (file, options){
+        // reset records
+        grunt.option('concat-records', {});
         // code stack
         var stack = [];
         var excludes = options.excludes;
