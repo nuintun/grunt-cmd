@@ -89,7 +89,7 @@ function css2js(code, id){
     // spmjs/spm#651
     code = code.split(/\r\n|\r|\n/).map(function (line){
         return line.replace(/\\/g, '\\\\');
-    }).join('\n');
+    }).join(linefeed);
 
     code = format(tpl, id, code.replace(/\'/g, '\\\''));
     return code;
