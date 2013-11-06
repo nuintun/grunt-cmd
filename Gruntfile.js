@@ -16,14 +16,14 @@ module.exports = function (grunt){
         linefeed = grunt.util.linefeed,
         CSSBanner = [
             '/*!',
-            ' * Project: css assets',
+            ' * Project: CSS Assets',
             ' * Author: newton',
             ' * Date: <%= grunt.template.today("yyyy-mm-dd") %>',
             ' */'
         ].join(linefeed),
         JSBanner = [
             '/*!',
-            ' * Project: js assets',
+            ' * Project: JS Assets',
             ' * Author: newton',
             ' * Date: <%= grunt.template.today("yyyy-mm-dd") %>',
             ' */'
