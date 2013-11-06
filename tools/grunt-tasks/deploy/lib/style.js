@@ -39,6 +39,8 @@ exports.init = function (grunt){
 
     // css concat
     exports.cssConcat = function (file, options){
+        // reset records
+        grunt.option('concat-records', {});
         var code = grunt.file.read(file.src);
         var meta = css.parse(code)[0];
         var id = meta.id;
