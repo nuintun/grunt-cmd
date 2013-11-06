@@ -101,7 +101,7 @@ module.exports = function (grunt){
                         '/*!',
                         ' * Sea.js ' + path.dirname(fpath).split('/').pop() + ' | seajs.org/LICENSE.md',
                         ' * Author: lifesinger & newton',
-                        ' * Date: ' + now.toISOString().replace(/(\d+-\d+-\d+).+/, '$1'),
+                        ' * Date: ' + grunt.template.today('yyyy-mm-dd'),
                         ' */'
                     ].join(linefeed), // banner
                     minify = UglifyJS.minify(combo, {
