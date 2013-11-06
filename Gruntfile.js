@@ -1,8 +1,31 @@
-// GruntFile
-module.exports = function(grunt) {
-    // UglifyJS
-    var UglifyJS = require('uglify-js');
-    
+/**
+ * 打包合并配置文件
+ */
+module.exports = function (grunt){
+    var path = require('path'),
+        UglifyJS = require('uglify-js'),
+        cmd = require('./tools/grunt-tasks/cmd-util'),
+        debugfile = false,
+        jsConcat = require('./tools/grunt-tasks/deploy/lib/script').init(grunt).jsConcat,
+        configAst = UglifyJS.parse(grunt.file.read('script/config.js')),
+        pkg = {alias: getAlias(configAst)},
+        excludes = [pkg.alias['$']],
+        linefeed = grunt.util.linefeed,
+        CSSBanner = [
+            '/*!',
+            ' * Project: Style',
+            ' * Author: newton',
+            ' * Date: <%= grunt.template.today("yyyy-mm-dd") %>',
+            ' */'
+        ].join(linefeed),
+        JSBanner = [
+            '/*!',
+            ' * Project: Script',
+            ' * Author: newton',
+            ' * Date: <%= grunt.template.today("yyyy-mm-dd") %>',
+            ' */'
+        ].join(linefeed);
+
     // 通过config.js获取alias
     function getAlias(ast){
         var alias = {},
@@ -30,128 +53,281 @@ module.exports = function(grunt) {
                 node.args[0].properties = node.args[0].properties.filter(function (node){
                     return node.key !== 'alias';
                 });
-
                 return node;
             }
         });
 
         return ast.transform(trans).print_to_string({ beautify: true, comments: true });
     }
-    
-    // init config
+
+    // 获取整站公用脚本common.js
+    function getCommon(fpath, excludes){
+        var common = jsConcat({src: fpath}, {
+            librarys: '.librarys',
+            root: 'script',
+            excludes: excludes.isArray() ? excludes : [],
+            include: '*',
+            debugfile: false
+        });
+
+        // 获取公共脚本总已经包含的模块，页面脚本要排除
+        cmd.ast.parse(common.uncompressor.code).forEach(function (meta){
+            excludes.push(meta.id);
+        });
+
+        return common.compressor.code;
+    }
+
+    // 初始化seajs环境
+    grunt.registerTask('seajs', 'Initialize the seajs environment.', function (){
+        grunt.log.write('>> '.green + 'Initializing seajs environment'.cyan + ' ...' + linefeed);
+        // move seajs
+        grunt.file.recurse('script', function (fpath, root){
+            fpath = fpath.replace(/\\/g, '/');
+            if (/\/sea\.js$/i.test(fpath)) {
+                var seajs = grunt.file.read(fpath),
+                    config = getConfig(configAst),
+                    combo = seajs + linefeed + config + linefeed,
+                    now = new Date(), // 当前时间对象
+                    banner = [
+                        '/*!',
+                        ' * Sea.js ' + path.dirname(fpath).split('/').pop() + ' | seajs.org/LICENSE.md',
+                        ' * Author: lifesinger & newton',
+                        ' * Date: ' + now.toISOString().replace(/(\d+-\d+-\d+).+/, '$1'),
+                        ' */'
+                    ].join(linefeed), // banner
+                    ast = UglifyJS.parse(combo), // ast
+                    minify = UglifyJS.minify(combo, {
+                        outSourceMap: '{{file}}',
+                        fromString: true,
+                        warnings: grunt.option('verbose')
+                    }), // minify code
+                    code = [
+                        banner,
+                        minify.code,
+                        getCommon('.librarys/script/view/common.js')
+                    ].join(linefeed);
+
+                fpath = path.join('js', path.relative(root, fpath)).replace(/\\/g, '/');
+
+                if (debugfile) {
+                    // add source map url
+                    code += '/*' + linefeed
+                        + '//@ sourceMappingURL=sea.js.map' + linefeed
+                        + '*/';
+                }
+
+                // 生成sea.js
+                grunt.file.write(fpath, code);
+
+                if (debugfile) {
+                    // 生成sea.js.map
+                    var map = minify.map
+                        .replace('"file":"{{file}}"', '"file":"sea.js"')
+                        .replace('"sources":["?"]', '"sources":["sea-debug.js"]'); // source map
+                    grunt.file.write(fpath + '.map', map);
+                    // 生成sea-debug.js
+                    grunt.file.write(fpath.replace(/\.js$/i, '-debug.js'), ast.print_to_string({
+                        beautify: true,
+                        comments: true
+                    }));
+                }
+            }
+            grunt.file.copy(fpath, path.join('js', path.relative(root, fpath)).replace(/\\/g, '/'));
+        }, 'seajs');
+
+        grunt.log.write('>> '.green + 'Initialize seajs environment'.cyan + ' ...').ok();
+    });
+
+    // 修复css中图片路径
+    grunt.registerTask('fixcss', 'Fix css resource path.', function (){
+        grunt.log.write('>> '.green + 'Fixing css htc path'.cyan + ' ...' + grunt.util.linefeed);
+        grunt.file.recurse('.librarys', function (fpath){
+            if (!grunt.file.isFile(fpath)) return;
+            fpath = fpath.replace(/\\/g, '/');
+            if (!/\.css$/i.test(path.basename(fpath))) return;
+            var code = grunt.file.read(fpath);
+            code = code.replace(/\s*\/Res\/style\//img, '/Res/css/');
+            grunt.file.write(fpath, code);
+        });
+        grunt.log.write('>> '.green + 'Fix css resource path'.cyan + ' ...').ok();
+    });
+
+    // 初始化构建配置
     grunt.initConfig({
+        // 转换
         transport: {
+            options: {
+                pkg: pkg,
+                root: 'script'
+            },
             base: {
                 options: {
-                    root: 'script',
                     family: 'base'
                 },
-                files: [{
-                    cwd: 'script/base',
-                    src: ['**/*.js']
-                }]
+                files: [
+                    {
+                        cwd: 'script/base',
+                        src: ['**/*'],
+                        filter: 'isFile'
+                    }
+                ]
             },
             util: {
                 options: {
-                    root: 'script',
                     family: 'util'
                 },
-                files: [{
-                    cwd: 'script/util',
-                    src: ['**/*.js', '**/*.swf']
-                }]
+                files: [
+                    {
+                        cwd: 'script/util',
+                        src: ['**/*'],
+                        filter: 'isFile'
+                    }
+                ]
             },
             common: {
                 options: {
-                    root: 'script',
                     family: 'common'
                 },
-                files: [{
-                    cwd: 'script/common',
-                    src: ['**/*.js']
-                }]
+                files: [
+                    {
+                        cwd: 'script/common',
+                        src: ['**/*'],
+                        filter: 'isFile'
+                    }
+                ]
             },
             view: {
                 options: {
-                    root: 'script',
                     family: 'view'
                 },
-                files: [{
-                    cwd: 'script/view',
-                    src: ['**/*.js']
-                }]
+                files: [
+                    {
+                        cwd: 'script/view',
+                        src: ['**/*'],
+                        filter: 'isFile'
+                    }
+                ]
             },
             css: {
                 options: {
                     root: 'style',
                     family: 'default'
                 },
-                files: [{
-                    cwd: 'style/default',
-                    src: ['**/*.css']
-                }]
+                files: [
+                    {
+                        cwd: 'style/default',
+                        src: ['**/*'],
+                        filter: 'isFile'
+                    }
+                ]
             },
             htc: {
                 options: {
                     root: 'style',
                     family: 'css3pie'
                 },
-                files: [{
-                    cwd: 'style/css3pie',
-                    src: ['**/*.htc']
-                }]
+                files: [
+                    {
+                        cwd: 'style/css3pie',
+                        src: ['**/*'],
+                        filter: 'isFile'
+                    }
+                ]
             }
         },
+        // 发布
         deploy: {
-            jquery: {
-                options: {
-                    root: 'script'
-                },
-                files: [{
-                    cwd: '.librarys/script',
-                    src: ['**/jquery.js']
-                }]
+            options: {
+                pkg: pkg,
+                root: 'script',
+                banner: JSBanner,
+                include: '*',
+                excludes: excludes,
+                debugfile: debugfile
             },
-            swf: {
+            // 非脚本文件处理
+            other: {
                 options: {
-                    root: 'script'
+                    include: 'default'
                 },
-                files: [{
-                    cwd: '.librarys/script',
-                    src: ['**/*.swf']
-                }]
+                files: [
+                    {
+                        cwd: '.librarys/script',
+                        src: ['**/*'],
+                        /**
+                         * 文件过滤
+                         * @param file
+                         * @returns {*}
+                         */
+                        filter: function (file){
+                            if (grunt.file.isFile(file)) {
+                                file = file.replace(/\\/g, '/');
+                                var basename = path.basename(file);
+                                if (!(/\.js$/i.test(basename) && /\/script\/view\//.test(file))) {
+                                    return file;
+                                }
+                            }
+                        }
+                    }
+                ]
             },
+            // 页面视图脚本
             view: {
-                options: {
-                    root: 'script',
-                    include: '*',
-                    excludes: ['base/jquery/1.9.1/jquery']
-                },
-                files: [{
-                    cwd: '.librarys/script',
-                    src: ['view/**/*.js']
-                }]
+                files: [
+                    {
+                        cwd: '.librarys/script/view',
+                        src: ['**/*'],
+                        /**
+                         * 文件过滤
+                         * @param file
+                         * @returns {*}
+                         */
+                        filter: function (file){
+                            if (!grunt.file.isFile(file)) return;
+                            if (!/common\.js$/i.test(path.basename(file))) return file;
+                        }
+                    }
+                ]
             },
+            // 站点样式
             css: {
                 options: {
                     root: 'style',
                     output: 'css',
-                    banner: '/** cmd-build author: Newton email: yongmiui@gmail.com date: ' + Date.now() + ' **/'
+                    banner: CSSBanner
                 },
-                files: [{
-                    cwd: '.librarys/style',
-                    src: ['**/base.css', '**/index.css']
-                }]
+                files: [
+                    {
+                        cwd: '.librarys/style',
+                        src: ['**/*'],
+                        /**
+                         * 文件过滤
+                         * @param file
+                         * @returns {*}
+                         */
+                        filter: function (file){
+                            if (!grunt.file.isFile(file)) return;
+                            if (!/[/\\]common\.css$/i.test(file) && !/[/\\]+widget[/\\]+/.test(file)) return file;
+                        }
+                    }
+                ]
             }
         },
+        // 清理
         clean: {
-            librarys: ['.librarys']
+            librarys: {
+                options: {
+                    force: true
+                },
+                src: ['.librarys']
+            }
         }
     });
 
-    //load task
+    // 加载构建任务
     grunt.loadTasks('tools/grunt-tasks/transport');
     grunt.loadTasks('tools/grunt-tasks/deploy');
     grunt.loadTasks('tools/grunt-tasks/clean');
-    grunt.registerTask('default', ['transport', 'deploy', 'clean']);
+    grunt.registerTask('default', ['transport', 'fixcss', 'seajs', 'deploy', 'clean']);
 };
