@@ -20,7 +20,7 @@ module.exports = function (grunt){
             // modules librarys
             librarys: '.librarys',
             // build debug file
-            debugfile: false,
+            debugfile: true,
             // output root dir
             output: 'js',
             // pkg info
