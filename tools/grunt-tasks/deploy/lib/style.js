@@ -9,7 +9,7 @@ exports.init = function (grunt){
     var cmd = require('../../cmd-util');
     var format = require('util').format;
     var css = cmd.css;
-    var cleancss = require('clean-css');
+    var CleanCss = require('clean-css');
     var verbose = grunt.option('verbose');
     var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
@@ -20,11 +20,11 @@ exports.init = function (grunt){
 
     // compressor css
     function compressor(code){
-        return cleancss.process(code, {
+        return new CleanCss({
             keepSpecialComments: 0,
-            removeEmpty: true,
-            debug: verbose
-        });
+            processImport: false,
+            benchmark: verbose
+        }).minify(code);
     }
 
     // css concat
