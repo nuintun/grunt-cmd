@@ -7,7 +7,7 @@ module.exports = function (grunt){
     var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
     var style = require('./lib/style').init(grunt);
-    var log = require('../log');
+    var log = require('../log').init(grunt);
 
     // normalize uri to linux format
     function normalize(uri){
