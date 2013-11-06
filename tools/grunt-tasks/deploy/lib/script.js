@@ -52,22 +52,20 @@ exports.init = function (grunt){
 
     // combine, not include the excludes file
     // default read file from fpath, but you can set from code string by set fromstr args
-    function combine(fpath, options, fromstr){
+    function combine(fpath, options){
         var stack = [];
         var excludes = options.excludes;
         var records = grunt.option('concat-records');
 
         // deep combine helper
-        function loop(fpath, options){
-            // file path, if set fromstr, fpath equal code
-            fpath = normalize(path.join(options.librarys, options.root, iduri.appendext(fpath)));
-            // cache readed file, prevent an circle loop, optimize efficiency        
+        function walk(fpath, options){
+            // cache readed file, prevent an circle loop, optimize efficiency
             if (records[fpath]) return;
             records[fpath] = true;
             // file not existe
             if (!grunt.file.exists(fpath)) {
                 grunt.log.write('>>   '.red + 'Can not find module : '.red + fpath.grey + ' !'.red + linefeed);
-                return stack;
+                return;
             }
             // deps, excludes, records, code, meta      
             var code = grunt.file.read(fpath);
@@ -75,17 +73,17 @@ exports.init = function (grunt){
 
             if (meta) {
                 if (meta.id) {
-                    // loop dependencies modules
+                    // walk dependencies modules
                     meta.dependencies.forEach(function (id){
                         // relative require
                         if (RELPATH_RE.test(id)) {
                             id = iduri.absolute(meta.id, id);
                         }
                         // deep combine
-                        if (!records[id] && id !== meta.id
+                        if (id !== meta.id
                             && excludes.indexOf(id) === -1
                             && /\.js$/i.test(iduri.appendext(id))) {
-                            loop(id, options);
+                            walk(normalize(path.join(options.librarys, options.root, iduri.appendext(id))), options);
                         }
                     });
                 } else {
@@ -99,7 +97,7 @@ exports.init = function (grunt){
         }
 
         // start deep combine
-        loop(fpath, options);
+        walk(fpath, options);
 
         // return stack
         return stack;
@@ -155,7 +153,7 @@ exports.init = function (grunt){
                 stack.push(code);
                 break;
             case '*':
-                stack = combine(output, options);
+                stack = combine(fpath, options);
                 break;
             default:
                 stack.push(grunt.file.read(fpath));
