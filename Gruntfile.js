@@ -1,4 +1,5 @@
 /**
+ * GruntFile
  * 打包合并配置文件
  */
 module.exports = function (grunt){
