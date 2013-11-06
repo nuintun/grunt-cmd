@@ -48,6 +48,7 @@ exports.init = function (grunt){
         // walk css file and import require css file
         function walk(){
             var hasImport = false;
+
             meta = css.parse(code)[0];
             code = css.stringify(meta.code, function (node, parent){
                 if (node.type === 'import' && node.id) {
@@ -106,12 +107,12 @@ exports.init = function (grunt){
         // merger info
         var merger = {
             compressor: {
-                output: output,
-                code: []
+                code: [],
+                output: output
             },
             uncompressor: {
-                output: output.replace(/\.css$/i, '-debug.css'),
-                code: []
+                code: [],
+                output: output.replace(/\.css$/i, '-debug.css')
             }
         };
 
