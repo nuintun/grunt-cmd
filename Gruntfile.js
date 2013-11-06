@@ -66,7 +66,7 @@ module.exports = function (grunt){
         var common = jsConcat({src: fpath}, {
             librarys: '.librarys',
             root: 'script',
-            excludes: excludes.isArray() ? excludes : [],
+            excludes: Array.isArray(excludes) ? excludes : [],
             include: '*',
             debugfile: false
         });
