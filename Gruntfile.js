@@ -85,9 +85,9 @@ module.exports = function (grunt){
         };
     }
 
-    // 初始化seajs环境
-    grunt.registerTask('seajs', 'Initialize the seajs environment.', function (){
-        grunt.log.write('>> '.green + 'Initializing seajs environment'.cyan + ' ...' + linefeed);
+    // 初始化网站脚本执行环境
+    grunt.registerTask('environ', 'Initialize execution environment.', function (){
+        grunt.log.write('>> '.green + 'Initializing execution environment'.cyan + ' ...' + linefeed);
         // move seajs
         grunt.file.recurse('script', function (fpath, root){
             fpath = fpath.replace(/\\/g, '/');
@@ -142,7 +142,7 @@ module.exports = function (grunt){
             grunt.file.copy(fpath, path.join('js', path.relative(root, fpath)).replace(/\\/g, '/'));
         }, 'seajs');
 
-        grunt.log.write('>> '.green + 'Initialize seajs environment'.cyan + ' ...').ok();
+        grunt.log.write('>> '.green + 'Initialize execution environment'.cyan + ' ...').ok();
     });
 
     // 修复资源引用路径
@@ -337,5 +337,5 @@ module.exports = function (grunt){
     grunt.loadTasks('tools/grunt-tasks/transport');
     grunt.loadTasks('tools/grunt-tasks/deploy');
     grunt.loadTasks('tools/grunt-tasks/clean');
-    grunt.registerTask('default', ['transport', 'pathfix', 'seajs', 'deploy', 'clean']);
+    grunt.registerTask('default', ['transport', 'pathfix', 'environ', 'deploy', 'clean']);
 };
