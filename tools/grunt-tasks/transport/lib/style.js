@@ -9,7 +9,7 @@ exports.init = function (grunt){
     var ast = require('../../cmd-util').ast;
     var iduri = require('../../cmd-util').iduri;
     var css = require('../../cmd-util').css;
-    var log = require('../../log');
+    var log = require('../../log').init(grunt);
     var linefeed = grunt.util.linefeed;
     var RELPATH_RE = /^\.{1,2}[/\\]+/;
 
