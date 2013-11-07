@@ -4,7 +4,6 @@
  **/
 module.exports = function (grunt){
     var path = require('path');
-    var linefeed = grunt.util.linefeed;
     var script = require('./lib/script').init(grunt);
     var style = require('./lib/style').init(grunt);
     var log = require('../log').init(grunt);

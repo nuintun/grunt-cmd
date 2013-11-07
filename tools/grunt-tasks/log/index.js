@@ -3,6 +3,7 @@
  * author : Newton
  **/
 exports.init = function (grunt){
+    var exports = {};
     var linefeed = grunt.util.linefeed;
     var slice = Array.prototype.slice;
     
@@ -20,4 +21,6 @@ exports.init = function (grunt){
     exports.ok = function (){
         grunt.log.write('>> '.green + slice.call(arguments).join(' ') + ' ...').ok();
     };
+
+    return exports;
 };
