@@ -12,7 +12,7 @@ module.exports = function (grunt){
         modify = ScriptDeploy.modify,
         configAst = UglifyJS.parse(grunt.file.read('script/config.js')),
         pkg = {alias: getAlias(configAst)},
-        excludes = [],
+        excludes = [pkg.alias['$']],
         linefeed = grunt.util.linefeed,
         CSSBanner = [
             '/*!',
@@ -94,9 +94,8 @@ module.exports = function (grunt){
             if (/\/sea\.js$/i.test(fpath)) {
                 var seajs = grunt.file.read(fpath),
                     config = getConfig(configAst),
-                    common = getCommon('.librarys/script/view/common.js'),
+                    common = getCommon('.librarys/script/view/common.js', [pkg.alias['$']]),
                     combo = seajs + linefeed + config + linefeed + common.code,
-                    now = new Date(), // 当前时间对象
                     banner = [
                         '/*!',
                         ' * Sea.js ' + path.dirname(fpath).split('/').pop() + ' | seajs.org/LICENSE.md',
