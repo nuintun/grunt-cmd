@@ -323,10 +323,15 @@ module.exports = function (grunt){
         },
         // 清理
         clean: {
+            options: {
+                force: true
+            },
+            // 清理以前的旧文件
+            output: {
+                src: ['js', 'css']
+            },
+            // 清理临时转换目录
             librarys: {
-                options: {
-                    force: true
-                },
                 src: ['.librarys']
             }
         }
@@ -336,5 +341,5 @@ module.exports = function (grunt){
     grunt.loadTasks('tools/grunt-tasks/transport');
     grunt.loadTasks('tools/grunt-tasks/deploy');
     grunt.loadTasks('tools/grunt-tasks/clean');
-    grunt.registerTask('default', ['transport', 'pathfix', 'environ', 'deploy', 'clean']);
+    grunt.registerTask('default', ['clean:output', 'transport', 'pathfix', 'environ', 'deploy', 'clean:librarys']);
 };
