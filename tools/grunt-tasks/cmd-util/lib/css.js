@@ -100,6 +100,11 @@ function parseBlock(code){
             } else {
                 stringNode.code = [stringNode.code, text].join('\n');
             }
+        } else {
+            tree.push({
+                id: m,
+                type: 'import'
+            });
         }
     }
 
