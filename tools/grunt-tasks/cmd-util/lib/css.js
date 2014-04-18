@@ -79,21 +79,27 @@ function parseBlock(code){
         if (blockDepth !== 0) return;
 
         var text = lines.shift();
-        var re = /^@import\s+(?:url\()?(\'|\")([^\)]+)\1\)?;?\s*$/;
-
         var m = match(text, 'import');
+        var hasImport = text.trim().indexOf('@import') === 0;
+
         if (!m) {
-            m = text.match(re);
-            m = m ? m[2] : null;
-        }
-        if (m) {
-            pushStringNode();
-            tree.push({
-                id: m,
-                type: 'import'
-            });
-        } else {
-            stringNode.code = [stringNode.code, text].join('\n');
+            if (hasImport) {
+                var re = /\s*@import\s+(url\(('|")?[^)]+?('|")?\)|('|")[^)]+?('|"));?/g;
+                m = text.match(re);
+                re = /\s*@import\s+(url\(('|")?([^)]+?)('|")?\)|('|")([^)]+?)('|"));?/;
+        
+                m.forEach(function(item) {
+                    item = item.match(re);
+                    item = item[3] || item[6];
+        
+                    item && tree.push({
+                        id: item,
+                        type: 'import'
+                    });
+                });
+            } else {
+                stringNode.code = [stringNode.code, text].join('\n');
+            }
         }
     }
 
