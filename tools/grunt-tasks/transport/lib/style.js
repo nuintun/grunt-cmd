@@ -41,10 +41,10 @@ exports.init = function (grunt){
     exports.cssParser = function (file, options){
         var dest = normalize(file.dest);
         var code = file.code;
-        var codeAst = css.parse(code);
+        var codeAst = css.parse(code)[0];
 
         // file
-        code = css.stringify(codeAst[0].code, function (node){
+        code = css.stringify(codeAst.code, function (node){
             if (node.type === 'import' && node.id) {
                 var id = iduri.parseAlias(options.pkg, node.id);
                 if (iduri.isAlias(options.pkg, node.id)) {
@@ -62,7 +62,7 @@ exports.init = function (grunt){
 
         // transport css
         var id = iduri.idFromPackage(options.pkg, file.name, options.format);
-        var banner = format('/*! define %s */', id);
+        var banner = format('/*! define %s */', codeAst.id || id);
         grunt.file.write(dest, [banner, code].join(linefeed));
     };
 
