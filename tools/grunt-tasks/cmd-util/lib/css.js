@@ -4,41 +4,24 @@
  *
  * Hsiaoming Yang <me@lepture.com>
  */
+var endblockRE = /^\/\*!\s*endblock(?:\s*|\s+(.+?)\s*)\*\/$/,
+    importRE = /^@import\s+url\s*\((['"]?)(.+?)\1\);?$|^@import\s+(['"])(.+?)\3;?$/,
+    tokensRE = /(\/\*[^*]*\*+([^/*][^*]*\*+)*\/)|(@import\s+url\s*\(.+?\);?|@import\s+(['"]).+?\4;?)|((.(?!@import\s|\/\*))+(.(?=@import\s|\/\*))*)|((.(?!@import\s|\/\*))*(.(?=@import\s|\/\*))+)|([\r\n]+)/g;
 
 /* 
  * parse code into a tree
  */
 exports.parse = function (code){
-    var lines = code.split(/\r\n|\r|\n/);
-    var isStarted = false;
-    var id, line;
+    var rules = code.match(tokensRE);
 
-    // clean blank lines
-    while (!isStarted && lines.length) {
-        line = lines[0];
-        if (line.trim()) {
-            isStarted = true;
-            id = match(line, 'define');
-            if (id) {
-                lines = lines.slice(1);
-            }
-        } else {
-            lines = lines.slice(1);
-        }
-    }
-    var node = {};
-    if (id) {
-        node.id = id;
-    }
-    node.type = 'block';
-    node.code = parseBlock(lines.join('\n'));
-    return [node];
+    return parseBlock(rules);
 };
 
 function match(text, key){
     // /*! key value */
-    var re = new RegExp('^\\/\\*!\\s*' + key + '\\s+(.*?)\\s*\\*\\/$');
-    var m = text.match(re);
+    var re = new RegExp('^\\/\\*!\\s*' + key + '\\s+(.+?)\\s*\\*\\/$'),
+        m = text.match(re);
+
     if (!m) return;
     return m[1];
 }
@@ -46,117 +29,131 @@ function match(text, key){
 /*
  * recursive parse a block type code
  */
-function parseBlock(code){
-    var lines = code.split(/\r\n|\r|\n/);
-    var tree = [];
+function parseBlock(rules){
+    var tree,
+        line = 1,
+        node = {
+            id: null,
+            type: 'block',
+            code: []
+        },
+        blockDepth = [],
+        pushfeed = true;
 
-    var stringNode = {
-        type: 'string',
-        code: ''
-    };
-    var blockNode = {};
-    var blockDepth = 0;
+    /*
+     * recursive parse a block code string
+     */
+    function parseString(rule, blockNode){
+        var lines = rule.split(/\n/),
+            childNode = blockNode.code[blockNode.code.length - 1];
 
-    while (lines.length) {
-        parseInBlock();
-    }
+        line += lines.length - 1;
 
-    function pushStringNode(){
-        if (!stringNode.code) return;
-        var text = stringNode.code.replace(/^\n+/, '');
-        text = text.replace(/\n+$/, '');
-        if (text) {
-            stringNode.code = text;
-            tree.push(stringNode);
+        if (!pushfeed) {
+            pushfeed = true;
+
+            rule = rule.replace(/^(\r\n|\r|\n)/, '');
         }
-        stringNode = {
-            type: 'string',
-            code: ''
-        };
-    }
 
-    function parseLine(){
-        if (blockDepth !== 0) return;
-
-        var text = lines.shift();
-        var m = match(text, 'import');
-        var hasImport = text.trim().indexOf('@import') === 0;
-
-        if (!m) {
-            if (hasImport) {
-                var re = /\s*@import\s+(url\(('|")?[^)]+?('|")?\)|('|")[^)]+?('|"));?/g;
-                m = text.match(re);
-                re = /\s*@import\s+(url\(('|")?([^)]+?)('|")?\)|('|")([^)]+?)('|"));?/;
-        
-                m.forEach(function(item) {
-                    item = item.match(re);
-                    item = item[3] || item[6];
-        
-                    item && tree.push({
-                        id: item,
-                        type: 'import'
-                    });
-                });
-            } else {
-                stringNode.code = [stringNode.code, text].join('\n');
-            }
+        if (childNode && childNode.type === 'string') {
+            childNode.code += rule;
         } else {
-            tree.push({
-                id: m,
-                type: 'import'
+            blockNode.code.push({
+                type: 'string',
+                code: rule
             });
         }
     }
 
-    function parseInBlock(){
-        var text = lines[0];
-        var start = match(text, 'block');
-        if (start) {
-            lines = lines.slice(1);
-            if (blockDepth === 0) {
-                pushStringNode();
-                blockNode.id = start;
-                blockNode.type = 'block';
-                blockNode.code = '';
-            } else {
-                blockNode.code = [blockNode.code, text].join('\n');
-            }
-            blockDepth++;
-            return;
-        }
-        /*! endblock id */
-        var re = /\/\*!\s*endblock(\s+[^\*]*)?\s*\*\/$/;
-        var end = text.match(re);
-        if (end) {
-            blockDepth--;
-            if (blockDepth < 0) {
-                throw new Error('block indent error.');
+    // parse block
+    function parseInBlock(rule){
+        var id, blockNode, start,
+            end, imports, childNode;
+
+        blockNode = blockDepth[blockDepth.length - 1] || node;
+
+        if (rule.substr(0, 2) === '/*') {
+            /*! start block id */
+            if (start = match(rule, 'block')) {
+                childNode = {
+                    id: start,
+                    type: 'block',
+                    code: []
+                };
+
+                blockDepth.push(childNode);
+                blockNode.code.push(childNode);
+                return;
             }
 
-            lines = lines.slice(1);
-            if (blockDepth === 0) {
-                blockNode.code = parseBlock(blockNode.code);
-                tree.push(blockNode);
-                // reset block node
-                blockNode = {};
-            } else {
-                blockNode.code = [blockNode.code, text].join('\n');
+            /*! endblock id */
+            if (end = rule.match(endblockRE)) {
+
+                if (!blockDepth.length) {
+                    throw new SyntaxError('block tag indent error in line: ' + line);
+                }
+
+                id = end[1];
+
+                // endblock tag closed error
+                if (id && (id !== blockNode.id)) {
+                    blockDepth = [];
+                    throw new SyntaxError('block tag indent error in line: ' + line);
+                }
+
+                blockDepth.pop();
+                return;
             }
-            return;
+
+            if (imports = match(rule, 'import')) {
+                childNode = {
+                    id: imports,
+                    type: 'import'
+                };
+
+                blockNode.code.push(childNode);
+                return;
+            }
+
+            if (!node.id && (id = match(rule, 'define'))) {
+                node.id = id;
+                pushfeed = false;
+                return;
+            }
         }
-        if (blockDepth > 0) {
-            lines = lines.slice(1);
-            blockNode.code = [blockNode.code, text].join('\n');
-        } else {
-            parseLine();
+
+        if (rule.substr(0, 8) === '@import ') {
+            if (id = rule.match(importRE)) {
+                if (id = id[2] || id[4]) {
+                    childNode = {
+                        id: id,
+                        type: 'import'
+                    };
+
+                    node.code.push(childNode);
+                    return;
+                }
+            }
         }
+
+        parseString(rule, blockNode);
     }
 
-    if (blockDepth !== 0) {
-        throw new Error('block not finished.');
+    // parse syntax tree, notes: for loop faster than forEach
+    for (var i = 0, len = rules.length; i < len; i++) {
+        parseInBlock(rules[i]);
     }
 
-    pushStringNode();
+    // lost endblock tag
+    if (blockDepth.length) {
+        blockDepth = [];
+        throw new SyntaxError('block tag is not closed in line: ' + line);
+    }
+
+    !node.id && delete node.id;
+
+    tree = [node];
+
     return tree;
 }
 
@@ -169,13 +166,17 @@ exports.walk = function (code, fn){
     }
 
     function walk(code){
+        var node;
+
         // if fn return false, it will stop the walk
         if (Array.isArray(code)) {
-            code.forEach(function (node){
+            for (var i = 0, len = code.length; i < len; i++) {
+                node = code[i];
+
                 if (fn(node) !== false && node.type === 'block' && Array.isArray(node.code)) {
-                    walk(node.code, node);
+                    walk(node.code);
                 }
-            });
+            }
         }
     }
 
@@ -186,49 +187,57 @@ exports.walk = function (code, fn){
  * print string of the parsed code
  */
 exports.stringify = function (code, filter){
+    var first = true;
+
     if (!Array.isArray(code)) {
         return code;
     }
 
     function print(code, parent){
-        var cursor = '';
+        var cursor = '',
+            newline = first ? '\n' : '';
 
-        code.forEach(function (node){
+        first = false;
+
+        function walk(node){
             if (filter) {
                 var ret = filter(node, parent);
-                if (ret === false) {
-                    return;
-                }
+
+                if (ret === false) return;
+
                 if (ret && ret.type) {
                     node = ret;
                 }
             }
-            if (node.type === 'string') {
-                cursor = [cursor, node.code].join('\n');
-                return;
+
+            switch (node.type) {
+                case 'string':
+                    cursor = [cursor, node.code].join('');
+                    break;
+                case 'import':
+                    cursor = [cursor, '/*! import ' + node.id + ' */'].join('');
+                    break;
+                case 'block':
+                    if (node.id) {
+                        cursor = [
+                            cursor,
+                                '/*! block ' + node.id + ' */',
+                            newline,
+                            print(node.code, node),
+                            newline,
+                                '/*! endblock ' + node.id + ' */'
+                        ].join('');
+                    } else {
+                        cursor = print(node.code, node);
+                    }
+                    break;
             }
-            if (node.type === 'import') {
-                cursor = [cursor, '/*! import ' + node.id + ' */'].join('\n');
-                return;
-            }
-            if (node.type === 'block' && node.id) {
-                cursor = [
-                    cursor,
-                    '',
-                    '/*! block ' + node.id + ' */',
-                    print(node.code, node),
-                    '/*! endblock ' + node.id + ' */',
-                    ''
-                ].join('\n');
-                return;
-            }
-            if (node.type === 'block' && !node.id) {
-                cursor = print(node.code, node);
-            }
-        });
-        cursor = cursor.replace(/^\n+/, '');
-        cursor = cursor.replace(/\n+$/, '');
-        cursor = cursor.replace(/\n{3,}/g, '\n\n');
+        }
+
+        for (var i = 0, len = code.length; i < len; i++) {
+            walk(code[i]);
+        }
+
         return cursor;
     }
 
