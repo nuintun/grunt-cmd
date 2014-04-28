@@ -212,21 +212,16 @@ exports.stringify = function (code, filter){
 
             switch (node.type) {
                 case 'string':
-                    cursor = [cursor, node.code].join('');
+                    cursor += node.code;
                     break;
                 case 'import':
-                    cursor = [cursor, '/*! import ' + node.id + ' */'].join('');
+                    cursor += '/*! import ' + node.id + ' */';
                     break;
                 case 'block':
                     if (node.id) {
-                        cursor = [
-                            cursor,
-                                '/*! block ' + node.id + ' */',
-                            newline,
-                            print(node.code, node),
-                            newline,
-                                '/*! endblock ' + node.id + ' */'
-                        ].join('');
+                        cursor += '/*! block ' + node.id + ' */'
+                            + newline + print(node.code, node) + newline
+                            + '/*! endblock ' + node.id + ' */';
                     } else {
                         cursor = print(node.code, node);
                     }
