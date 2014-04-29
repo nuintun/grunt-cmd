@@ -6,9 +6,9 @@
  */
 var endblockRE = /^\/\*!\s*endblock(?:\s*|\s+(.+?)\s*)\*\/$/,
     importRE = /^@import\s+url\s*\((['"]?)(.+?)\1\);?$|^@import\s+(['"])(.+?)\3;?$/,
-    tokensRE = /(\/\*[^*]*\*+([^/*][^*]*\*+)*\/)|(@import\s+url\s*\(.+?\);?|@import\s+(['"]).+?\4;?)|((.(?!@import\s|\/\*))+(.(?=@import\s|\/\*))*)|((.(?!@import\s|\/\*))*(.(?=@import\s|\/\*))+)|([\r\n]+)/g;
+    tokensRE = /(\/\*[^*]*\*+([^/*][^*]*\*+)*\/)|(@import\s+url\s*\(.+?\);?|@import\s+(['"]).+?\4;?)|((.(?!@import\s|\/\*))+(.(?=@import\s|\/\*))*)|((.(?!@import\s|\/\*))*(.(?=@import\s|\/\*))+)/g;
 
-/* 
+/*
  * parse code into a tree
  */
 exports.parse = function (code){
@@ -31,32 +31,21 @@ function match(text, key){
  */
 function parseBlock(rules){
     var tree,
-        line = 1,
         node = {
             id: null,
             type: 'block',
             code: []
         },
-        blockDepth = [],
-        pushfeed = true;
+        blockDepth = [];
 
     /*
      * recursive parse a block code string
      */
     function parseString(rule, blockNode){
-        var lines = rule.split(/\r\n|\r|\n/),
-            childNode = blockNode.code[blockNode.code.length - 1];
-
-        line += lines.length - 1;
-
-        if (!pushfeed) {
-            pushfeed = true;
-
-            rule = rule.replace(/^(\r\n|\r|\n)/, '');
-        }
+        var childNode = blockNode.code[blockNode.code.length - 1];
 
         if (childNode && childNode.type === 'string') {
-            childNode.code += rule;
+            childNode.code += '\n\n' + rule;
         } else {
             blockNode.code.push({
                 type: 'string',
@@ -90,7 +79,7 @@ function parseBlock(rules){
             if (end = rule.match(endblockRE)) {
 
                 if (!blockDepth.length) {
-                    throw new SyntaxError('block tag indent error in line: ' + line);
+                    throw new SyntaxError('block indent error.');
                 }
 
                 id = end[1];
@@ -98,7 +87,7 @@ function parseBlock(rules){
                 // endblock tag closed error
                 if (id && (id !== blockNode.id)) {
                     blockDepth = [];
-                    throw new SyntaxError('block tag indent error in line: ' + line);
+                    throw new SyntaxError('block indent error.');
                 }
 
                 blockDepth.pop();
@@ -117,7 +106,6 @@ function parseBlock(rules){
 
             if (!node.id && (id = match(rule, 'define'))) {
                 node.id = id;
-                pushfeed = false;
                 return;
             }
         }
@@ -147,7 +135,7 @@ function parseBlock(rules){
     // lost endblock tag
     if (blockDepth.length) {
         blockDepth = [];
-        throw new SyntaxError('block tag is not closed in line: ' + line);
+        throw new SyntaxError('block not finished.');
     }
 
     !node.id && delete node.id;
@@ -187,17 +175,12 @@ exports.walk = function (code, fn){
  * print string of the parsed code
  */
 exports.stringify = function (code, filter){
-    var first = true;
-
     if (!Array.isArray(code)) {
         return code;
     }
 
     function print(code, parent){
-        var cursor = '',
-            newline = first ? '\n' : '';
-
-        first = false;
+        var cursor = '';
 
         function walk(node){
             if (filter) {
@@ -212,16 +195,16 @@ exports.stringify = function (code, filter){
 
             switch (node.type) {
                 case 'string':
-                    cursor += node.code;
+                    cursor += '\n' + node.code;
                     break;
                 case 'import':
-                    cursor += '/*! import ' + node.id + ' */';
+                    cursor += '\n/*! import ' + node.id + ' */';
                     break;
                 case 'block':
                     if (node.id) {
-                        cursor += '/*! block ' + node.id + ' */'
-                            + newline + print(node.code, node) + newline
-                            + '/*! endblock ' + node.id + ' */';
+                        cursor += '\n\n/*! block ' + node.id + ' */\n'
+                            + print(node.code, node)
+                            + '\n/*! endblock ' + node.id + ' */\n';
                     } else {
                         cursor = print(node.code, node);
                     }
@@ -232,6 +215,9 @@ exports.stringify = function (code, filter){
         for (var i = 0, len = code.length; i < len; i++) {
             walk(code[i]);
         }
+
+        cursor = cursor.trim();
+        cursor = cursor.replace(/\n{3,}/g, '\n\n');
 
         return cursor;
     }
