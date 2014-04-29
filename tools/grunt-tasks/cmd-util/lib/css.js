@@ -45,7 +45,7 @@ function parseBlock(rules){
         var childNode = blockNode.code[blockNode.code.length - 1];
 
         if (childNode && childNode.type === 'string') {
-            childNode.code += '\n\n' + rule;
+            childNode.code += '\n' + rule;
         } else {
             blockNode.code.push({
                 type: 'string',
