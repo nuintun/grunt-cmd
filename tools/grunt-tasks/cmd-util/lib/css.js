@@ -72,7 +72,7 @@ function parseBlock(rules){
 
         blockNode = blockDepth[blockDepth.length - 1] || node;
 
-        if (rule.substr(0, 2) === '/*') {
+        if (rule.substr(0, 3) === '/*!') {
             /*! start block id */
             if (start = match(rule, 'block')) {
                 childNode = {
