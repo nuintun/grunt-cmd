@@ -44,7 +44,7 @@ function parseBlock(rules){
      * recursive parse a block code string
      */
     function parseString(rule, blockNode){
-        var lines = rule.split(/\n/),
+        var lines = rule.split(/\r\n|\r|\n/),
             childNode = blockNode.code[blockNode.code.length - 1];
 
         line += lines.length - 1;
