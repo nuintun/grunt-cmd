@@ -4,7 +4,6 @@
  *
  * copyright (c) 2013 by Hsiaoming Yang
  */
-
 var UglifyJS = require('uglify-js');
 
 /**
@@ -33,7 +32,7 @@ function parse(ast){
     ast = getAst(ast);
     var meta = [];
 
-    var walker = new UglifyJS.TreeWalker(function (node, descend){
+    var walker = new UglifyJS.TreeWalker(function (node){
         // don't collect dependencies in the define in define
         if (node instanceof UglifyJS.AST_Call && node.expression.name === 'define') {
             var define = getDefine(node);
@@ -100,7 +99,7 @@ function modify(ast, options){
         };
     }
 
-    var trans = new UglifyJS.TreeTransformer(function (node, descend){
+    var trans = new UglifyJS.TreeTransformer(function (node){
         // modify define
         if ((idfn || depfn) && node instanceof UglifyJS.AST_Call && node.expression.name === 'define' && node.args.length) {
             var args = [];
@@ -121,14 +120,15 @@ function modify(ast, options){
             } else if (depfn) {
                 var elements = [];
                 if (meta.dependencies.length && isFunction(depfn)) {
-                    meta.dependencies.forEach(function (d){
-                        var value = depfn(d);
+                    var value;
+                    for (var i = 0, len = meta.dependencies.length; i < len; i++) {
+                        value = depfn(meta.dependencies[i]);
                         if (value) {
                             elements.push(
                                 new UglifyJS.AST_String({value: value})
                             );
                         }
-                    });
+                    }
                 } else if (isString(depfn)) {
                     elements = [new UglifyJS.AST_String({value: depfn})];
                 } else if (Array.isArray(depfn)) {
@@ -239,7 +239,7 @@ function getRequires(ast){
 
     var deps = [];
 
-    var walker = new UglifyJS.TreeWalker(function (node, descend){
+    var walker = new UglifyJS.TreeWalker(function (node){
         if (node instanceof UglifyJS.AST_Call && node.expression.name === 'require') {
             var args = node.expression.args || node.args;
             if (args && args.length === 1) {
@@ -304,20 +304,21 @@ function replaceRequire(ast, requirefn, asyncfn){
     };
 
     var replaceChild = function (node, fn){
-        var args = node.args[0],
+        var child, args = node.args[0],
             children = args instanceof UglifyJS.AST_Array ? args.elements : [args];
 
-        children.forEach(function (child){
+        for (var i = 0, len = children.length; i < len; i++) {
+            child = children[i];
             if (child instanceof UglifyJS.AST_String) {
                 child.value = fn(child.getValue());
             }
-        });
+        }
     };
 
     requirefn = makeFunction(requirefn);
     asyncfn = makeFunction(asyncfn);
 
-    var trans = new UglifyJS.TreeTransformer(function (node, descend){
+    var trans = new UglifyJS.TreeTransformer(function (node){
         // require('foo')
         if (requirefn && node instanceof UglifyJS.AST_Call && node.expression.name === 'require' && node.args.length) {
             return replaceChild(node, requirefn);
