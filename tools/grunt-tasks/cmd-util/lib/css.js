@@ -6,7 +6,7 @@
  */
 var endblockRE = /^\/\*!\s*endblock(?:\s*|\s+(.+?)\s*)\*\/$/,
     importRE = /^@import\s+url\s*\((['"]?)(.+?)\1\);?$|^@import\s+(['"])(.+?)\3;?$/,
-    tokensRE = /(\/\*[^*]*\*+([^/*][^*]*\*+)*\/)|(@import\s+url\s*\(.+?\);?|@import\s+(['"]).+?\4;?)|((.(?!@import\s|\/\*))+(.(?=@import\s|\/\*))*)|((.(?!@import\s|\/\*))*(.(?=@import\s|\/\*))+)/g;
+    tokensRE = /(\/\*[^*]*\*+([^/*][^*]*\*+)*\/)|(@import\s+url\s*\(.+?\);?|@import\s+(['"]).+?\4;?)|(([\S\s](?!@import\s|\/\*))+([\S\s](?=@import\s|\/\*))*)|(([\S\s](?!@import\s|\/\*))*([\S\s](?=@import\s|\/\*))+)/g;
 
 /*
  * parse code into a tree
@@ -45,7 +45,7 @@ function parseBlock(rules){
         var childNode = blockNode.code[blockNode.code.length - 1];
 
         if (childNode && childNode.type === 'string') {
-            childNode.code += '\n' + rule;
+            childNode.code += rule;
         } else {
             blockNode.code.push({
                 type: 'string',
@@ -195,16 +195,16 @@ exports.stringify = function (code, filter){
 
             switch (node.type) {
                 case 'string':
-                    cursor += '\n' + node.code;
+                    cursor += node.code;
                     break;
                 case 'import':
-                    cursor += '\n/*! import ' + node.id + ' */';
+                    cursor += '/*! import ' + node.id + ' */';
                     break;
                 case 'block':
                     if (node.id) {
                         cursor += '\n\n/*! block ' + node.id + ' */\n'
                             + print(node.code, node)
-                            + '\n/*! endblock ' + node.id + ' */\n';
+                            + '\n/*! endblock ' + node.id + ' */\n\n';
                     } else {
                         cursor = print(node.code, node);
                     }
