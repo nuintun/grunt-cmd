@@ -59,7 +59,7 @@ exports.init = function (grunt){
     function combine(fpath, options){
         // reset records
         grunt.option('concat-records', {});
-        var stack = [];
+        var stack = '';
         var excludes = options.excludes;
         var records = grunt.option('concat-records');
 
@@ -100,7 +100,7 @@ exports.init = function (grunt){
             }
 
             // push code to the first stack
-            stack.push(code);
+            stack += code + linefeed;
         }
 
         // start deep combine
@@ -118,7 +118,7 @@ exports.init = function (grunt){
         // reset records
         grunt.option('concat-records', {});
         // code stack
-        var stack = [];
+        var stack = '';
         var excludes = options.excludes;
         var fpath = file.src;
         // output file path relative the online resource root
@@ -145,10 +145,10 @@ exports.init = function (grunt){
                             if (RELPATH_RE.test(id)) {
                                 id = iduri.absolute(meta.id, id);
                                 if (excludes.indexOf(id) === -1 && id !== meta.id) {
-                                    var file = iduri.normalize(iduri.appendext(id))
+                                    var file = iduri.normalize(iduri.appendext(id));
                                     var fpath = normalize(path.join(options.librarys, options.root, file));
                                     if (grunt.file.exists(fpath)) {
-                                        stack.push(grunt.file.read(fpath));
+                                        stack += grunt.file.read(fpath) + linefeed;
                                     } else {
                                         log.warn('  Can not find module :'.red, fpath.grey, '!'.red);
                                     }
@@ -160,18 +160,18 @@ exports.init = function (grunt){
                         log.warn('  Module :'.red, fpath.grey, 'has no module id !'.red);
                     }
                 }
-                stack.push(code);
+                stack += code + linefeed;
                 break;
             case '*':
-                stack = combine(fpath, options);
+                stack += combine(fpath, options);
                 break;
             default:
-                stack.push(grunt.file.read(fpath));
+                stack += grunt.file.read(fpath) + linefeed;
                 break;
         }
 
         // get merger code
-        merger.compressor.code = merger.uncompressor.code = stack.join(linefeed);
+        merger.compressor.code = merger.uncompressor.code = stack;
         // create minify file
         log.info('  Compressoring script'.cyan);
         var compressorAst = compressor(merger.compressor.code);

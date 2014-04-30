@@ -32,8 +32,8 @@ module.exports = function (grunt){
     // 通过config.js获取alias
     function getAlias(ast){
         var alias = {},
-            walker = new UglifyJS.TreeWalker(function (node, descend){
-                if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs' 
+            walker = new UglifyJS.TreeWalker(function (node){
+                if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs'
                     && node.expression.property === 'config' && node.args.length) {
                     node.args[0].properties.forEach(function (node){
                         if (node.key === 'alias') {
@@ -52,8 +52,8 @@ module.exports = function (grunt){
 
     // 获取线上配置文件config.js
     function getConfig(ast){
-        var trans = new UglifyJS.TreeTransformer(function (node, descend){
-            if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs' 
+        var trans = new UglifyJS.TreeTransformer(function (node){
+            if (node instanceof UglifyJS.AST_Call && node.start.value === 'seajs'
                 && node.expression.property === 'config' && node.args.length) {
                 node.args[0].properties = node.args[0].properties.filter(function (node){
                     return node.key !== 'alias';
@@ -72,7 +72,7 @@ module.exports = function (grunt){
                 librarys: '.librarys',
                 root: 'script',
                 excludes: Array.isArray(excludes) ? excludes : []
-            }).join(linefeed);
+            });
 
         // 获取公共脚本总已经包含的模块，页面脚本要排除
         cmd.ast.parse(common).forEach(function (meta){
