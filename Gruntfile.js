@@ -87,7 +87,7 @@ module.exports = function (grunt){
 
     // 初始化网站脚本执行环境
     grunt.registerTask('environ', 'Initialize execution environment.', function (){
-        grunt.log.write('>> '.green + 'Initializing execution environment'.cyan + ' ...' + linefeed);
+        grunt.log.write('$ '.green + 'Initializing execution environment'.cyan + ' ...' + linefeed);
         // move seajs
         grunt.file.recurse('script', function (fpath, root){
             fpath = fpath.replace(/\\/g, '/');
@@ -141,12 +141,12 @@ module.exports = function (grunt){
             grunt.file.copy(fpath, path.join('js', path.relative(root, fpath)).replace(/\\/g, '/'));
         }, 'seajs');
 
-        grunt.log.write('>> '.green + 'Initialize execution environment'.cyan + ' ...').ok();
+        grunt.log.write('$ '.green + 'Initialize execution environment'.cyan + ' ...').ok();
     });
 
     // 修复资源引用路径
     grunt.registerTask('pathfix', 'Resource path fix.', function (){
-        grunt.log.write('>> '.green + 'Fixing resource path'.cyan + ' ...' + grunt.util.linefeed);
+        grunt.log.write('$ '.green + 'Fixing resource path'.cyan + ' ...' + grunt.util.linefeed);
         grunt.file.recurse('.librarys', function (fpath){
             if (!grunt.file.isFile(fpath)) return;
             fpath = fpath.replace(/\\/g, '/');
@@ -155,7 +155,7 @@ module.exports = function (grunt){
             code = code.replace(/\s*\/Res\/style\//img, '/Res/css/');
             grunt.file.write(fpath, code);
         });
-        grunt.log.write('>> '.green + 'Fix resource path'.cyan + ' ...').ok();
+        grunt.log.write('$ '.green + 'Fix resource path'.cyan + ' ...').ok();
     });
 
     // 初始化构建配置
