@@ -5,7 +5,7 @@
 module.exports = function (grunt){
     var path = require('path'),
         UglifyJS = require('uglify-js'),
-        cmd = require('./tools/grunt-tasks/cmd-util'),
+        cmd = require('cmd-helper'),
         debugfile = grunt.option('debugfile') || false,
         ScriptDeploy = require('./tools/grunt-tasks/deploy/lib/script').init(grunt),
         combine = ScriptDeploy.combine,

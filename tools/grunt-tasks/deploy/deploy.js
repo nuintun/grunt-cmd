@@ -16,8 +16,10 @@ module.exports = function (grunt){
 
     // registerMultiTask
     grunt.registerMultiTask('deploy', 'Deploy cmd modules.', function (){
+        console.time('$'.green + ' Deploy time consuming'.cyan);
+        var that = this;
         // Merge task-specific and/or target-specific options with these defaults.
-        var options = this.options({
+        var options = that.options({
             // modules librarys
             librarys: '.librarys',
             // build debug file
@@ -35,7 +37,7 @@ module.exports = function (grunt){
             }
         });
 
-        this.files.forEach(function (file){
+        that.files.forEach(function (file){
             file.src.forEach(function (fpath){
                 fpath = normalize(fpath);
                 // set librarys dir
@@ -98,5 +100,6 @@ module.exports = function (grunt){
                 }
             });
         });
+        console.timeEnd('$'.green + ' Deploy time consuming'.cyan);
     });
 };

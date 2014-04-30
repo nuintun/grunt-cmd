@@ -9,17 +9,17 @@ exports.init = function (grunt){
     
     // warn log
     exports.warn = function (){
-        grunt.log.write('>> '.red + slice.call(arguments).join(' ') + linefeed);
+        grunt.log.write('$ '.red + slice.call(arguments).join(' ') + linefeed);
     };
     
     // info log
     exports.info = function (){
-        grunt.log.write('>> '.green + slice.call(arguments).join(' ') + ' ...' + linefeed);
+        grunt.log.write('$ '.green + slice.call(arguments).join(' ') + ' ...' + linefeed);
     };
     
     // ok log
     exports.ok = function (){
-        grunt.log.write('>> '.green + slice.call(arguments).join(' ') + ' ...').ok();
+        grunt.log.write('$ '.green + slice.call(arguments).join(' ') + ' ...').ok();
     };
 
     return exports;

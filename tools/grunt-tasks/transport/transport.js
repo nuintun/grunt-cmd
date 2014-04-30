@@ -15,7 +15,7 @@ module.exports = function (grunt){
 
     // string regexp
     function sourceRegx(source){
-        var imp = /[\^\.\\\|\(\)\*\+\-\$\[\]\?]/igm;
+        var imp = /[.?*^$\-+|\\/(){}\[\]]/igm;
         source = source.replace(imp, function (match){
             return '\\' + match;
         });
@@ -24,8 +24,10 @@ module.exports = function (grunt){
 
     // registerMultiTask
     grunt.registerMultiTask('transport', 'Transport everything into cmd.', function (){
+        console.time('$'.green + ' Transport time consuming'.cyan);
+        var that = this;
         // config
-        var options = this.options({
+        var options = that.options({
             // librarys
             librarys: '.librarys',
             // type root
@@ -45,14 +47,14 @@ module.exports = function (grunt){
             }
         });
 
-        this.files.forEach(function (file){
+        that.files.forEach(function (file){
             // set librarys dir
             options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
             // set librarys dir
             options.root = grunt.util._.isString(options.root) ? options.root : 'script';
             // if donot set cwd warn it
             if (!file.cwd) {
-                grunt.log.write('>> '.red + 'Please set cwd !'.red);
+                log.warn('Please set cwd !'.red);
                 return;
             }
             // for each files
@@ -119,5 +121,6 @@ module.exports = function (grunt){
                 log.ok('Transport to'.cyan, dest.grey);
             });
         });
+        console.timeEnd('$'.green + ' Transport time consuming'.cyan);
     });
 };

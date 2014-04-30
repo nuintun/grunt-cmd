@@ -6,12 +6,13 @@ exports.init = function (grunt){
     var exports = {};
     var path = require('path');
     var format = require('util').format;
-    var ast = require('../../cmd-util').ast;
-    var iduri = require('../../cmd-util').iduri;
-    var css = require('../../cmd-util').css;
+    var cmd = require('cmd-helper');
+    var ast = cmd.ast;
+    var iduri = cmd.iduri;
+    var css = cmd.css;
     var log = require('../../log').init(grunt);
     var linefeed = grunt.util.linefeed;
-    var RELPATH_RE = /^\.{1,2}[/\\]+/;
+    var RELPATH_RE = /^\.{1,2}[/\\]/;
 
     // normalize uri to linux format
     function normalize(uri){

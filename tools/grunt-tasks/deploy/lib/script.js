@@ -6,13 +6,13 @@ exports.init = function (grunt){
     var exports = {};
     var linefeed = grunt.util.linefeed;
     var path = require('path');
-    var cmd = require('../../cmd-util');
+    var cmd = require('cmd-helper');
     var ast = cmd.ast;
     var iduri = cmd.iduri;
     var UglifyJS = require('uglify-js');
     var log = require('../../log').init(grunt);
     var verbose = grunt.option('verbose');
-    var RELPATH_RE = /^\.{1,2}[/\\]+/;
+    var RELPATH_RE = /^\.{1,2}[/\\]/;
 
     // normalize uri to linux format
     function normalize(uri){
@@ -85,11 +85,12 @@ exports.init = function (grunt){
                         if (RELPATH_RE.test(id)) {
                             id = iduri.absolute(meta.id, id);
                         }
+                        var file = iduri.normalize(iduri.appendext(id));
                         // deep combine
                         if (id !== meta.id
                             && excludes.indexOf(id) === -1
-                            && /\.js$/i.test(iduri.appendext(id))) {
-                            walk(normalize(path.join(options.librarys, options.root, iduri.appendext(id))), options);
+                            && /\.js$/i.test(file)) {
+                            walk(normalize(path.join(options.librarys, options.root, file)), options);
                         }
                     });
                 } else {
@@ -144,8 +145,8 @@ exports.init = function (grunt){
                             if (RELPATH_RE.test(id)) {
                                 id = iduri.absolute(meta.id, id);
                                 if (excludes.indexOf(id) === -1 && id !== meta.id) {
-                                    var fpath = normalize(path.join(options.librarys,
-                                        options.root, iduri.appendext(id)));
+                                    var file = iduri.normalize(iduri.appendext(id))
+                                    var fpath = normalize(path.join(options.librarys, options.root, file));
                                     if (grunt.file.exists(fpath)) {
                                         stack.push(grunt.file.read(fpath));
                                     } else {

@@ -14,17 +14,19 @@ module.exports = function (grunt){
 
     // register task
     grunt.registerMultiTask('clean', 'Clean files and folders.', function (){
+        console.time('$'.green + ' Clean time consuming'.cyan);
+        var that = this;
         // Merge task-specific and/or target-specific options with these defaults.
-        var options = this.options({
+        var options = that.options({
             force: false
         });
 
         grunt.verbose.writeflags(options, 'Options');
 
         // Clean specified files / dirs.
-        this.filesSrc.forEach(function (filepath){
+        that.filesSrc.forEach(function (filepath){
             filepath = normalize(filepath);
-            grunt.log.write('>> '.green + 'Cleaning '.cyan + filepath.grey + ' ...');
+            grunt.log.write('$ '.green + 'Cleaning '.cyan + filepath.grey + ' ...');
 
             try {
                 grunt.file.delete(filepath, options);
@@ -35,5 +37,6 @@ module.exports = function (grunt){
                 grunt.fail.warn('Clean operation failed'.red);
             }
         });
+        console.timeEnd('$'.green + ' Clean time consuming'.cyan);
     });
 };

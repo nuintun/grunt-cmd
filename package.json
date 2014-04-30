@@ -1,27 +1,28 @@
 {
-  "name": "cmd-grunt",
-  "version": "1.0.1",
-  "homepage": "https://github.com/nuintun/cmd-grunt",
-  "description": "CMD transport and deploy with grunt !",
-  "author": {
-    "name": "Nuintun",
-    "email": "<nuintun@qq.com>"
-  },
-  "bugs": {
-    "url": "https://github.com/nuintun/cmd-grunt/issues",
-    "email": "nuintun@qq.com"
-  },
-  "engines": {
-    "node": ">=0.8.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/nuintun/cmd-grunt.git"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "grunt": ">=0.4.1",
-    "clean-css": ">=2.0.0",
-    "uglify-js": ">=2.4.2"
-  }
+    "name": "cmd-grunt",
+    "version": "2.0.0",
+    "homepage": "https://github.com/nuintun/cmd-grunt",
+    "description": "CMD transport and deploy with grunt !",
+    "author": {
+        "name": "Nuintun",
+        "email": "<nuintun@qq.com>"
+    },
+    "bugs": {
+        "url": "https://github.com/nuintun/cmd-grunt/issues",
+        "email": "nuintun@qq.com"
+    },
+    "engines": {
+        "node": ">=0.8.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nuintun/cmd-grunt.git"
+    },
+    "dependencies": {
+        "grunt": ">=0.4.2",
+        "cmd-helper": "~0.0.3",
+        "clean-css": ">=2.0.0",
+        "uglify-js": ">=2.4.2"
+    },
+    "devDependencies": {}
 }
