@@ -16,7 +16,7 @@ module.exports = function (grunt){
     grunt.registerMultiTask('clean', 'Clean files and folders.', function (){
         var that = this,
             options = that.options({
-                force: true
+                force: false
             });
 
         console.time('$'.green + ' Clean time consuming'.cyan);
