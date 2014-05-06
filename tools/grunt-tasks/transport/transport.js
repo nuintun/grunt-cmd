@@ -3,31 +3,26 @@
  * author : Newton
  **/
 module.exports = function (grunt){
-    var path = require('path');
-    var script = require('./lib/script').init(grunt);
-    var style = require('./lib/style').init(grunt);
-    var log = require('../log').init(grunt);
+    var path = require('path'),
+        iduri = require('cmd-helper').iduri,
+        script = require('./lib/script').init(grunt),
+        style = require('./lib/style').init(grunt),
+        log = require('../log').init(grunt),
+        VERSION_RE = /^(\d+\.){2}\d+$/;
 
     // normalize uri to linux format
     function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
-    // string regexp
-    function sourceRegx(source){
-        var imp = /[.?*^$\-+|\\/(){}\[\]]/igm;
-        source = source.replace(imp, function (match){
-            return '\\' + match;
-        });
-        return new RegExp(source, 'i');
-    }
-
     // registerMultiTask
     grunt.registerMultiTask('transport', 'Transport everything into cmd.', function (){
+        var options, that = this;
+
         console.time('$'.green + ' Transport time consuming'.cyan);
-        var that = this;
+
         // config
-        var options = that.options({
+        options = that.options({
             // librarys
             librarys: '.librarys',
             // type root
@@ -37,7 +32,7 @@ module.exports = function (grunt){
             // create a debug file or not
             debug: true,
             // path or object
-            pkg: grunt.file.exists('alias.json') ? grunt.file.readJSON('alias.json') : {alias: {}},
+            pkg: grunt.file.exists('alias.json') ? grunt.file.readJSON('alias.json') : {},
             // process
             process: false,
             // parsers
@@ -46,38 +41,60 @@ module.exports = function (grunt){
                 '.css': style.cssParser
             }
         });
+        options.pkg.alias = options.pkg.alias || {};
+        options.pkg.family = options.pkg.family || '';
+        options.pkg.name = options.pkg.name || '';
+        options.pkg.version = options.pkg.version || '';
+        // set transport temp librarys dir
+        options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
+        // set root dir
+        options.root = grunt.util._.isString(options.root) ? options.root : 'script';
 
+        // loop files
         that.files.forEach(function (file){
-            // set librarys dir
-            options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
-            // set librarys dir
-            options.root = grunt.util._.isString(options.root) ? options.root : 'script';
             // if donot set cwd warn it
             if (!file.cwd) {
                 log.warn('Please set cwd !'.red);
                 return;
             }
+
             // for each files
             file.src.forEach(function (fpath){
+                var dirname, code, dist,
+                    fname, extname, parsers,
+                    family, name = '',
+                    subname = '', version = '';
+
                 // format fpath
                 fpath = normalize(fpath);
-                // file source
-                var source = options.source;
-                source = grunt.util._.isFunction(source) ? source(fpath) : source;
-                source = grunt.util._.isString(source) ? source : 'src';
-                source = source.replace(/\\/g, '/').replace(/^(\.|\/)[./]*|[/]*$/g, '');
                 // split file path
-                var dirs = normalize(path.dirname(fpath).replace(sourceRegx(source), '')).split('/');
+                dirname = path.dirname(fpath).split('/');
                 // file name
-                var fname = path.basename(fpath);
+                fname = path.basename(fpath);
                 // extname
-                var extname = path.extname(fname).toLowerCase();
+                extname = path.extname(fname);
                 // find fileparsers
-                var fileparsers = options.parsers[extname];
+                parsers = options.parsers[extname];
+
                 // set family name version
-                options.pkg.family = options.family || '';
-                options.pkg.name = dirs.shift() || '';
-                options.pkg.version = dirs.join('/');
+                for (var i = 0, len = dirname.length; i < len; i++) {
+                    if (version) {
+                        subname += dirname[i] + '/'
+                    } else {
+                        if (VERSION_RE.test(dirname[i])) {
+                            version = dirname[i];
+                        } else {
+                            name += dirname[i] + '/'
+                        }
+                    }
+                }
+
+                // name
+                name = name.slice(0, -1);
+                family = options.pkg.family = options.family || '';
+                options.pkg.name = options.name || name;
+                options.pkg.version = options.version || version;
+                fname = options.pkg.filename = options.filename || subname + fname;
                 fpath = normalize(path.join(file.cwd, fpath));
 
                 // file not found
@@ -85,25 +102,29 @@ module.exports = function (grunt){
                     log.warn('File :'.red, fpath.grey, 'not found !'.red);
                     return;
                 }
+
                 // set dest file
-                var dest = normalize(path.join(
+                dist = normalize(path.join(
                     options.librarys,
                     options.root,
-                    options.pkg.family,
-                    options.pkg.name,
-                    options.pkg.version,
+                    family,
+                    name,
+                    version,
                     fname
                 ));
+
                 // if not has fileparsers copy file
-                if (!fileparsers) {
+                if (!parsers) {
                     // copy file
                     log.info('Transporting'.cyan, fpath.grey);
-                    grunt.file.copy(fpath, dest);
-                    log.ok('Transport to'.cyan, dest.grey);
+                    grunt.file.copy(fpath, dist);
+                    log.ok('Transport to'.cyan, dist.grey);
                     return;
                 }
+
                 // code
-                var code = grunt.file.read(fpath);
+                code = grunt.file.read(fpath);
+
                 // grunt template
                 if (options.process) {
                     code = grunt.template.process(code, options.process);
@@ -112,15 +133,15 @@ module.exports = function (grunt){
                 // file info
                 log.info('Transporting'.cyan, fpath.grey);
                 // fileparsers
-                fileparsers({
+                parsers({
                     src: fpath,
                     code: code,
-                    name: fname,
-                    dest: dest
+                    dist: dist
                 }, options);
-                log.ok('Transport to'.cyan, dest.grey);
+                log.ok('Transport to'.cyan, dist.grey);
             });
         });
+
         console.timeEnd('$'.green + ' Transport time consuming'.cyan);
     });
 };
