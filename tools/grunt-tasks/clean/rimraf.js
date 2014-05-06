@@ -4,13 +4,11 @@
 module.exports = rimraf;
 rimraf.sync = rimrafSync;
 
-var timeout,
-    fs = require('fs'),
+var fs = require('fs'),
     path = require('path'),
     isWindows = (process.platform === "win32");
 
 // for EMFILE handling
-timeout = 0;
 exports.EMFILE_MAX = 1000;
 exports.BUSYTRIES_MAX = 3;
 
@@ -31,7 +29,8 @@ function defaults(options){
 }
 
 function rimraf(p, options, cb){
-    var busyTries = 0;
+    var timeout = 0,
+        busyTries = 0;
 
     if (typeof options === 'function') {
         cb = options;
@@ -55,7 +54,7 @@ function rimraf(p, options, cb){
                 setTimeout(function (){
                     rimraf_(p, options, fn);
                 }, time);
-
+                // return
                 return;
             }
 
@@ -64,7 +63,7 @@ function rimraf(p, options, cb){
                 setTimeout(function (){
                     rimraf_(p, options, fn);
                 }, timeout++);
-
+                // return
                 return;
             }
 
@@ -75,9 +74,6 @@ function rimraf(p, options, cb){
         // callback
         cb(er);
     });
-
-    // reset timeout
-    timeout = 0;
 }
 
 // Two possible strategies.
