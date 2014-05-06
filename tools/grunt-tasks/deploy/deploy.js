@@ -25,9 +25,9 @@ module.exports = function (grunt){
             // modules librarys
             librarys: '.librarys',
             // build debug file
-            debugfile: grunt.option('debugfile'),
+            debugfile: grunt.option('debugfile') === true,
             // build sourcemap
-            sourcemap: grunt.option('sourcemap'),
+            sourcemap: grunt.option('sourcemap') === true,
             // output root dir
             output: 'js',
             // pkg info
