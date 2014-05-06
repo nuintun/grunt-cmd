@@ -3,30 +3,32 @@
  * author : Newton
  **/
 exports.init = function (grunt){
-    var exports = {};
-    var linefeed = grunt.util.linefeed;
-    var path = require('path');
-    var cmd = require('cmd-helper');
-    var ast = cmd.ast;
-    var iduri = cmd.iduri;
-    var UglifyJS = require('uglify-js');
-    var log = require('../../log').init(grunt);
-    var verbose = grunt.option('verbose');
-    var RELPATH_RE = /^\.{1,2}[/\\]/;
+    var exports = {},
+        linefeed = grunt.util.linefeed,
+        path = require('path'),
+        cmd = require('cmd-helper'),
+        ast = cmd.ast,
+        iduri = cmd.iduri,
+        UglifyJS = require('uglify-js'),
+        log = require('../../log').init(grunt),
+        verbose = grunt.option('verbose'),
+        RELPATH_RE = /^\.{1,2}[/\\]/;
 
     // normalize uri to linux format
     function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
-    // debug modify
+    // debug source
     function modify(code, parsers){
         var parsed = ast.modify(code, function (v){
             var ext = path.extname(v);
+
             return ext && parsers[ext] ?
                 v.replace(new RegExp('\\' + ext + '$'), '-debug' + ext) :
                 v + '-debug';
         });
+
         // return code
         return parsed.print_to_string({
             beautify: true,
@@ -38,7 +40,7 @@ exports.init = function (grunt){
     exports.modify = modify;
 
     // compressor code
-    function compressor(code){
+    function minify(code){
         return UglifyJS.minify(code, {
             outSourceMap: '{{file}}',
             fromString: true,
@@ -57,35 +59,46 @@ exports.init = function (grunt){
     // combine, not include the excludes file
     // default read file from fpath, but you can set from code string by set fromstr args
     function combine(fpath, options){
+        var records, buffer = '',
+            excludes = options.excludes;
+
         // reset records
         grunt.option('concat-records', {});
-        var stack = '';
-        var excludes = options.excludes;
-        var records = grunt.option('concat-records');
+
+        records = grunt.option('concat-records');
 
         // deep combine helper
         function walk(fpath, options){
+            var code, meta;
+
             // cache readed file, prevent an circle loop, optimize efficiency
             if (records[fpath]) return;
+
             records[fpath] = true;
+
             // file not existe
             if (!grunt.file.exists(fpath)) {
                 log.warn('  Can not find module :'.red, fpath.grey, '!'.red);
                 return;
             }
+
             // deps, excludes, records, code, meta      
-            var code = grunt.file.read(fpath);
-            var meta = ast.parseFirst(code);
+            code = grunt.file.read(fpath);
+            meta = ast.parseFirst(code);
 
             if (meta) {
                 if (meta.id) {
                     // walk dependencies modules
                     meta.dependencies.forEach(function (id){
+                        var file;
+
                         // relative require
                         if (RELPATH_RE.test(id)) {
                             id = iduri.absolute(meta.id, id);
                         }
-                        var file = iduri.normalize(iduri.appendext(id));
+
+                        file = iduri.normalize(iduri.appendext(id));
+
                         // deep combine
                         if (id !== meta.id
                             && excludes.indexOf(id) === -1
@@ -99,15 +112,15 @@ exports.init = function (grunt){
                 }
             }
 
-            // push code to the first stack
-            stack += code + linefeed;
+            // push code to the first buffer
+            buffer += code + linefeed;
         }
 
         // start deep combine
         walk(fpath, options);
 
-        // return stack
-        return stack;
+        // return buffer
+        return buffer;
     }
 
     // exports combine api
@@ -115,40 +128,44 @@ exports.init = function (grunt){
 
     // exports js concat
     exports.jsConcat = function (file, options){
+        var buffer = '',
+            code, meta, bufferAst,
+            excludes = options.excludes,
+            fpath = file.src,
+            dist = normalize(path.relative(path.join(options.librarys, options.root), file.src)),
+            data = {
+                minify: {
+                    dist: dist
+                },
+                source: {
+                    dist: dist.replace(/\.js$/i, '-debug.js')
+                }
+            };
+
         // reset records
         grunt.option('concat-records', {});
-        // code stack
-        var stack = '';
-        var excludes = options.excludes;
-        var fpath = file.src;
-        // output file path relative the online resource root
-        var output = normalize(path.relative(path.join(options.librarys, options.root), file.src));
-        // merger result
-        var merger = {
-            compressor: {
-                output: output
-            },
-            uncompressor: {
-                output: output.replace(/\.js$/i, '-debug.js')
-            }
-        };
 
         // combine
         switch (options.include) {
             case '.':
-                var code = grunt.file.read(fpath);
-                var meta = ast.parseFirst(code);
+                code = grunt.file.read(fpath);
+                meta = ast.parseFirst(code);
+
                 if (meta) {
                     if (meta.id) {
                         // include relative file
                         meta.dependencies.forEach(function (id){
+                            var file, fpath;
+
                             if (RELPATH_RE.test(id)) {
                                 id = iduri.absolute(meta.id, id);
+
                                 if (excludes.indexOf(id) === -1 && id !== meta.id) {
-                                    var file = iduri.normalize(iduri.appendext(id));
-                                    var fpath = normalize(path.join(options.librarys, options.root, file));
+                                    file = iduri.normalize(iduri.appendext(id));
+                                    fpath = normalize(path.join(options.librarys, options.root, file));
+
                                     if (grunt.file.exists(fpath)) {
-                                        stack += grunt.file.read(fpath) + linefeed;
+                                        buffer += grunt.file.read(fpath) + linefeed;
                                     } else {
                                         log.warn('  Can not find module :'.red, fpath.grey, '!'.red);
                                     }
@@ -160,44 +177,47 @@ exports.init = function (grunt){
                         log.warn('  Module :'.red, fpath.grey, 'has no module id !'.red);
                     }
                 }
-                stack += code + linefeed;
+                buffer += code + linefeed;
                 break;
             case '*':
-                stack += combine(fpath, options);
+                buffer += combine(fpath, options);
                 break;
             default:
-                stack += grunt.file.read(fpath) + linefeed;
+                buffer += grunt.file.read(fpath) + linefeed;
                 break;
         }
 
-        // get merger code
-        merger.compressor.code = merger.uncompressor.code = stack;
         // create minify file
         log.info('  Compressoring script'.cyan);
-        var compressorAst = compressor(merger.compressor.code);
-        merger.compressor.code = compressorAst.code + linefeed;
+
+        bufferAst = minify(buffer);
+        data.minify.code = bufferAst.code + linefeed;
         log.ok('  Compressoring script success'.cyan);
 
-        if (options.debugfile) {
+        if (options.sourcemap) {
             // create source map
-            grunt.log.write('>>   '.green + 'Creating script sourcemap'.cyan + ' ...' + linefeed);
             log.info('  Creating script sourcemap'.cyan);
-            merger.compressor.code += '/*' + linefeed + '//@ sourceMappingURL='
-                + iduri.basename(merger.compressor.output) + '.map' + linefeed + '*/';
+
+            data.minify.code += '/*' + linefeed + '//@ sourceMappingURL='
+                + iduri.basename(data.minify.dist) + '.map' + linefeed + '*/';
             // sourcemap info
-            merger.sourcemap = {
-                output: merger.compressor.output + '.map',
-                code: fixSourcemap(compressorAst.map, merger.compressor.output)
+            data.sourcemap = {
+                dist: data.minify.dist + '.map',
+                code: fixSourcemap(bufferAst.map, data.minify.dist)
             };
+
             log.ok('  Create script sourcemap success'.cyan);
+        }
+
+        if (options.debugfile) {
             // create debug file
             log.info('  Creating debug script'.cyan);
-            merger.uncompressor.code = modify(merger.uncompressor.code, options.parsers);
+            data.source.code = modify(buffer, options.parsers);
             log.ok('  Create debug script success'.cyan);
         }
 
         // return merger result
-        return merger;
+        return data;
     };
 
     return exports;

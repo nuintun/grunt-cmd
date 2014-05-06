@@ -3,11 +3,11 @@
  * author : Newton
  **/
 module.exports = function (grunt){
-    var path = require('path');
-    var linefeed = grunt.util.linefeed;
-    var script = require('./lib/script').init(grunt);
-    var style = require('./lib/style').init(grunt);
-    var log = require('../log').init(grunt);
+    var path = require('path'),
+        linefeed = grunt.util.linefeed,
+        script = require('./lib/script').init(grunt),
+        style = require('./lib/style').init(grunt),
+        log = require('../log').init(grunt);
 
     // normalize uri to linux format
     function normalize(uri){
@@ -16,14 +16,18 @@ module.exports = function (grunt){
 
     // registerMultiTask
     grunt.registerMultiTask('deploy', 'Deploy cmd modules.', function (){
+        var options, that = this;
+
         console.time('$'.green + ' Deploy time consuming'.cyan);
-        var that = this;
+
         // Merge task-specific and/or target-specific options with these defaults.
-        var options = that.options({
+        options = that.options({
             // modules librarys
             librarys: '.librarys',
             // build debug file
-            debugfile: true,
+            debugfile: grunt.option('debugfile'),
+            // build sourcemap
+            sourcemap: grunt.option('sourcemap'),
             // output root dir
             output: 'js',
             // pkg info
@@ -36,70 +40,95 @@ module.exports = function (grunt){
                 '.css': style.cssConcat
             }
         });
+        // set librarys dir
+        options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
+        // set librarys dir
+        options.root = grunt.util._.isString(options.root) ? options.root : 'script';
 
+        // banner
+        options.banner = grunt.util._.isString(options.banner) ? options.banner : '';
+        options.banner = options.banner.trim();
+        options.banner = options.banner ? options.banner + linefeed : options.banner;
+
+        // loop files
         that.files.forEach(function (file){
             file.src.forEach(function (fpath){
+                var include, excludes, extname,
+                    dist, data, banner, parsers;
+
                 fpath = normalize(fpath);
-                // set librarys dir
-                options.librarys = grunt.util._.isString(options.librarys) ? options.librarys : '.librarys';
-                // set librarys dir
-                options.root = grunt.util._.isString(options.root) ? options.root : 'script';
                 // file include
-                var include = options.include || 'default';
+                include = options.include || 'default';
                 include = grunt.util._.isFunction(include) ? include(fpath) : include;
                 options.include = include === '.' || include === '*' ? include : 'default';
                 // file excludes
-                var excludes = options.excludes;
+                excludes = options.excludes;
                 excludes = grunt.util._.isFunction(excludes) ? excludes(fpath) : excludes;
-                excludes = Array.isArray(excludes) ? excludes : [].push(excludes);
+                excludes = Array.isArray(excludes) ? excludes : [excludes];
                 options.excludes = grunt.util._.uniq(excludes);
                 // real file path
-                var dest = normalize(path.join(options.output, fpath));
+                dist = normalize(path.join(options.output, fpath));
                 fpath = normalize(path.join(file.cwd, fpath));
+
                 // file not found
                 if (!grunt.file.exists(fpath)) {
                     log.warn('File'.red, fpath.grey, 'not found !'.red);
                     return;
                 }
+
                 // extname
-                var extname = path.extname(fpath).toLowerCase();
+                extname = path.extname(fpath).toLowerCase();
+
                 // none parsers
                 if (!options.parsers[extname]) {
                     log.info('Deploying'.cyan, fpath.grey);
-                    grunt.file.copy(fpath, dest);
-                    log.ok('Deploy to'.cyan, dest.grey);
+                    grunt.file.copy(fpath, dist);
+                    log.ok('Deploy to'.cyan, dist.grey);
                     return;
                 }
+
                 // start merger
                 log.info('Deploying'.cyan, fpath.grey);
-                // merger file start
-                var merger = options.parsers[extname]({
+
+                // get parsers
+                parsers = options.parsers[extname];
+                // deploy file start
+                data = parsers({
                     src: fpath
                 }, options);
+
                 // merger fail
-                if (!merger) return;
+                if (!data) return;
+
                 // banner
-                var banner = grunt.util._.isString(options.banner) ? options.banner : '';
+                banner = grunt.util._.isString(options.banner) ? options.banner : '';
                 banner = banner.trim();
                 banner = banner ? banner + linefeed : banner;
-                // minify file
-                dest = normalize(path.join(options.output, merger.compressor.output));
-                grunt.file.write(dest, banner + merger.compressor.code);
-                log.ok('Deploy to'.cyan, dest.grey);
-                if (options.debugfile) {
-                    // source map, for the online debug, now chrome support sourcemap
-                    if (merger.sourcemap) {
-                        dest = normalize(path.join(options.output, merger.sourcemap.output));
-                        grunt.file.write(dest, merger.sourcemap.code);
-                        log.ok('Deploy to'.cyan, dest.grey);
+                dist = normalize(path.join(options.output, data.minify.dist));
+
+                grunt.file.write(dist, banner + data.minify.code);
+                log.ok('Deploy to'.cyan, dist.grey);
+
+                // get sourcemap
+                if (options.sourcemap) {
+                    if (data.sourcemap) {
+                        // source map, for the online debug, now chrome support sourcemap
+                        dist = normalize(path.join(options.output, data.sourcemap.dist));
+                        grunt.file.write(dist, data.sourcemap.code);
+                        log.ok('Deploy to'.cyan, dist.grey);
                     }
+                }
+
+                // get debugfile
+                if (options.debugfile) {
                     // debug file
-                    dest = normalize(path.join(options.output, merger.uncompressor.output));
-                    grunt.file.write(dest, banner + merger.uncompressor.code);
-                    log.ok('Deploy to'.cyan, dest.grey);
+                    dist = normalize(path.join(options.output, data.source.dist));
+                    grunt.file.write(dist, banner + data.source.code);
+                    log.ok('Deploy to'.cyan, dist.grey);
                 }
             });
         });
+
         console.timeEnd('$'.green + ' Deploy time consuming'.cyan);
     });
 };

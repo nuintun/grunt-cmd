@@ -72,7 +72,7 @@ module.exports = function (grunt){
                 // file name
                 fname = path.basename(fpath);
                 // extname
-                extname = path.extname(fname);
+                extname = path.extname(fname).toLowerCase();
                 // find fileparsers
                 parsers = options.parsers[extname];
 

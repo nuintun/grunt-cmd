@@ -6,7 +6,8 @@ module.exports = function (grunt){
     var path = require('path'),
         UglifyJS = require('uglify-js'),
         cmd = require('cmd-helper'),
-        debugfile = grunt.option('debugfile') || false,
+        debugfile = grunt.option('debugfile'),
+        sourcemap = grunt.option('sourcemap'),
         ScriptDeploy = require('./tools/grunt-tasks/deploy/lib/script').init(grunt),
         combine = ScriptDeploy.combine,
         modify = ScriptDeploy.modify,
@@ -91,6 +92,7 @@ module.exports = function (grunt){
         // move seajs
         grunt.file.recurse('script', function (fpath, root){
             fpath = fpath.replace(/\\/g, '/');
+
             if (/\/sea\.js$/i.test(fpath)) {
                 var seajs = grunt.file.read(fpath),
                     config = getConfig(configAst),
@@ -108,18 +110,15 @@ module.exports = function (grunt){
                         fromString: true,
                         warnings: grunt.option('verbose')
                     }), // minify code
-                    code = [
-                        banner,
-                        minify.code
-                    ].join(linefeed);
+                    code = banner + linefeed + minify.code;
 
                 // 排除common.js中已经包含的模块
                 excludes = excludes.concat(common.modules);
 
                 fpath = path.join('js', path.relative(root, fpath)).replace(/\\/g, '/');
 
-                if (debugfile) {
-                    // add source map url
+                // add source map url
+                if (sourcemap) {
                     code += '/*' + linefeed
                         + '//@ sourceMappingURL=sea.js.map' + linefeed
                         + '*/';
@@ -128,16 +127,21 @@ module.exports = function (grunt){
                 // 生成sea.js
                 grunt.file.write(fpath, code);
 
-                if (debugfile) {
-                    // 生成sea.js.map
+                // 生成sea.js.map
+                if (sourcemap) {
                     var map = minify.map
                         .replace('"file":"{{file}}"', '"file":"sea.js"')
                         .replace('"sources":["?"]', '"sources":["sea-debug.js"]'); // source map
+
                     grunt.file.write(fpath + '.map', map);
-                    // 生成sea-debug.js
+                }
+
+                // 生成sea-debug.js
+                if (debugfile) {
                     grunt.file.write(fpath.replace(/\.js$/i, '-debug.js'), modify(combo, {'.js': true, '.css': true}));
                 }
             }
+
             grunt.file.copy(fpath, path.join('js', path.relative(root, fpath)).replace(/\\/g, '/'));
         }, 'seajs');
 
@@ -148,10 +152,15 @@ module.exports = function (grunt){
     grunt.registerTask('pathfix', 'Resource path fix.', function (){
         grunt.log.write('$ '.green + 'Fixing resource path'.cyan + ' ...' + grunt.util.linefeed);
         grunt.file.recurse('.librarys', function (fpath){
+            var code;
+
             if (!grunt.file.isFile(fpath)) return;
+
             fpath = fpath.replace(/\\/g, '/');
+
             if (!/\.css$/i.test(path.basename(fpath))) return;
-            var code = grunt.file.read(fpath);
+
+            code = grunt.file.read(fpath);
             code = code.replace(/\s*\/Res\/style\//img, '/Res/css/');
             grunt.file.write(fpath, code);
         });
@@ -251,7 +260,8 @@ module.exports = function (grunt){
                 excludes: function (){
                     return excludes;
                 },
-                debugfile: debugfile
+                debugfile: debugfile,
+                sourcemap: sourcemap
             },
             // 非脚本文件处理
             other: {

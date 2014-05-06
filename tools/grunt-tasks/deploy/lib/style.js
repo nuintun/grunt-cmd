@@ -3,34 +3,24 @@
  * author : Newton
  **/
 exports.init = function (grunt){
-    var exports = {};
-    var linefeed = grunt.util.linefeed;
-    var path = require('path');
-    var cmd = require('cmd-helper');
-    var format = require('util').format;
-    var css = cmd.css;
-    var CleanCss = require('clean-css');
-    var log = require('../../log').init(grunt);
-    var verbose = grunt.option('verbose');
-    var RELPATH_RE = /^\.{1,2}[/\\]/;
+    var exports = {},
+        linefeed = grunt.util.linefeed,
+        path = require('path'),
+        cmd = require('cmd-helper'),
+        format = require('util').format,
+        css = cmd.css,
+        CleanCss = require('clean-css'),
+        log = require('../../log').init(grunt),
+        verbose = grunt.option('verbose'),
+        RELPATH_RE = /^\.{1,2}[/\\]/;
 
     // normalize uri to linux format
     function normalize(uri){
         return path.normalize(uri).replace(/\\/g, '/');
     }
 
-    // uncompressor debug css
-    function modify(code){
-        return new CleanCss({
-            keepSpecialComments: '*',
-            keepBreaks: true,
-            processImport: false,
-            benchmark: verbose
-        }).minify(code);
-    }
-
     // compressor css
-    function compressor(code){
+    function minify(code){
         return new CleanCss({
             keepSpecialComments: 0,
             processImport: false,
@@ -40,12 +30,16 @@ exports.init = function (grunt){
 
     // css concat
     exports.cssConcat = function (file, options){
+        var records, dist, data,
+            code = grunt.file.read(file.src),
+            meta = css.parse(code)[0],
+            id = meta.id;
+
         // reset records
         grunt.option('concat-records', {});
-        var code = grunt.file.read(file.src);
-        var meta = css.parse(code)[0];
-        var id = meta.id;
-        var records = grunt.option('concat-records');
+
+        // get records
+        records = grunt.option('concat-records');
 
         // no id
         if (!id) {
@@ -79,12 +73,15 @@ exports.init = function (grunt){
 
             if (RELPATH_RE.test(node.id)) {
                 if (parent && parent.id) {
-                    node.id = normalize(path.join(path.dirname(parent.id), node.id));
+                    node.id = iduri.absolute(parent.id, node.id);
+                } else {
+                    log.warn('  Require a transported file !'.red);
+                    return false;
                 }
             }
 
             // find file in librarys
-            fpath = normalize(path.join(path.dirname(file.src), node.id));
+            fpath = normalize(path.join(options.librarys, options.root, node.id));
 
             // circle imports
             if (records[node.id]) return false;
@@ -115,35 +112,34 @@ exports.init = function (grunt){
         }
 
         // output file path relative the online resource root
-        var output = normalize(path.relative(path.join(options.librarys, options.root), file.src));
+        dist = normalize(path.relative(path.join(options.librarys, options.root), file.src));
 
         // merger info
-        var merger = {
-            compressor: {
-                code: [],
-                output: output
+        data = {
+            minify: {
+                code: '',
+                dist: dist
             },
-            uncompressor: {
-                code: [],
-                output: output.replace(/\.css$/i, '-debug.css')
+            source: {
+                code: '',
+                dist: dist.replace(/\.css$/i, '-debug.css')
             }
         };
 
         // compressor code
         log.info('  Compressoring css'.cyan);
-        merger.compressor.code.push(format('/*! define %s */', merger.compressor.output), linefeed, code);
-        merger.compressor.code = compressor(merger.compressor.code.join(linefeed));
+        data.minify.code = format('/*! define %s */', data.minify.dist) + linefeed + code;
+        data.minify.code = minify(data.minify.code);
         log.ok('  Compressor css success'.cyan);
 
         if (options.debugfile) {
             // create debug file
             log.info('  Creating debug css'.cyan);
-            merger.uncompressor.code.push(format('/*! define %s */', merger.uncompressor.output), linefeed, code);
-            merger.uncompressor.code = modify(merger.uncompressor.code.join(linefeed));
+            data.source.code = format('/*! define %s */', data.source.dist) + linefeed + code;
             log.ok('  Create debug css success'.cyan);
         }
 
-        return merger;
+        return data;
     };
 
     return exports;
