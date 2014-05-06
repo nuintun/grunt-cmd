@@ -7,7 +7,7 @@
  */
 module.exports = function (grunt){
     var path = require('path'),
-        rimraf = require('rimraf');
+        rimraf = require('./rimraf');
 
     // normalize uri to linux format
     function normalize(uri){
