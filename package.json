@@ -1,5 +1,5 @@
 {
-    "name": "cmd-grunt",
+    "name": "cmd-build",
     "version": "2.0.0",
     "homepage": "https://github.com/nuintun/cmd-grunt",
     "description": "CMD transport and deploy with grunt !",

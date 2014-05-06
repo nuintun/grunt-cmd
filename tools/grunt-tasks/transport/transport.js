@@ -141,7 +141,6 @@ module.exports = function (grunt){
                 log.ok('Transport to'.cyan, dist.grey);
             });
         });
-
         console.timeEnd('$'.green + ' Transport time consuming'.cyan);
     });
 };

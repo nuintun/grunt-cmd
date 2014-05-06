@@ -14,18 +14,18 @@ module.exports = function (grunt){
 
     // register task
     grunt.registerMultiTask('clean', 'Clean files and folders.', function (){
+        var that = this,
+            options = that.options({
+                force: true
+            });
+
         console.time('$'.green + ' Clean time consuming'.cyan);
-        var that = this;
-        // Merge task-specific and/or target-specific options with these defaults.
-        var options = that.options({
-            force: false
-        });
 
         grunt.verbose.writeflags(options, 'Options');
-
         // Clean specified files / dirs.
         that.filesSrc.forEach(function (filepath){
             filepath = normalize(filepath);
+
             grunt.log.write('$ '.green + 'Cleaning '.cyan + filepath.grey + ' ...');
 
             try {
