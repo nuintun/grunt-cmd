@@ -64,7 +64,7 @@ module.exports = function (grunt){
         console.time('$'.green + ' Clean time consuming'.cyan);
 
         // Clean specified files / dirs.
-        this.filesSrc.forEach(function (filepath){
+        that.filesSrc.forEach(function (filepath){
             clean(filepath, options);
         });
 

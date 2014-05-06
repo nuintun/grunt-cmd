@@ -4,7 +4,6 @@
  **/
 module.exports = function (grunt){
     var path = require('path'),
-        iduri = require('cmd-helper').iduri,
         script = require('./lib/script').init(grunt),
         style = require('./lib/style').init(grunt),
         log = require('../log').init(grunt),
