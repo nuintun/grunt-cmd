@@ -37,6 +37,7 @@ module.exports = function (grunt){
                 grunt.fail.warn('Clean operation failed'.red);
             }
         });
+
         console.timeEnd('$'.green + ' Clean time consuming'.cyan);
     });
 };

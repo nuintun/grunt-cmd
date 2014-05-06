@@ -128,6 +128,7 @@ module.exports = function (grunt){
                 }
             });
         });
+
         console.timeEnd('$'.green + ' Deploy time consuming'.cyan);
     });
 };
