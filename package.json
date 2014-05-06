@@ -1,14 +1,14 @@
 {
-    "name": "cmd-build",
+    "name": "cmd-grunt-build",
     "version": "2.0.0",
-    "homepage": "https://github.com/nuintun/cmd-grunt",
-    "description": "CMD transport and deploy with grunt !",
+    "homepage": "https://github.com/nuintun/cmd-grunt-build",
+    "description": "cmd transport and deploy with grunt !",
     "author": {
         "name": "Nuintun",
         "email": "<nuintun@qq.com>"
     },
     "bugs": {
-        "url": "https://github.com/nuintun/cmd-grunt/issues",
+        "url": "https://github.com/nuintun/cmd-grunt-build/issues",
         "email": "nuintun@qq.com"
     },
     "engines": {
@@ -16,11 +16,11 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/nuintun/cmd-grunt.git"
+        "url": "https://github.com/nuintun/cmd-grunt-build.git"
     },
     "dependencies": {
         "grunt": ">=0.4.2",
-        "cmd-helper": "~0.0.3",
+        "cmd-helper": "~0.1.0",
         "clean-css": ">=2.0.0",
         "uglify-js": ">=2.4.2"
     },
