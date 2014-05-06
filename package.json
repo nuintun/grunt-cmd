@@ -20,7 +20,7 @@
     },
     "dependencies": {
         "grunt": ">=0.4.2",
-        "cmd-helper": "~0.1.0",
+        "cmd-helper": "~0.2.0",
         "clean-css": ">=2.0.0",
         "uglify-js": ">=2.4.2"
     },
