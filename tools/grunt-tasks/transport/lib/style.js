@@ -2,8 +2,7 @@
  * transport style helper
  * author : Newton
  **/
-var path = require('path'),
-    CleanCss = require('clean-css'),
+var CleanCss = require('clean-css'),
     format = require('util').format,
     cmd = require('cmd-helper'),
     ast = cmd.ast,
@@ -15,11 +14,6 @@ exports.init = function (grunt){
     var exports = {},
         log = require('../../log').init(grunt),
         linefeed = grunt.util.linefeed;
-
-    // normalize uri to linux format
-    function normalize(uri){
-        return path.normalize(uri).replace(/\\/g, '/');
-    }
 
     // css to js
     function css2js(code, id){
@@ -44,8 +38,8 @@ exports.init = function (grunt){
     // css to js parser
     exports.css2jsParser = function (file, options){
         var code, id,
-            fpath = normalize(file.src),
-            dist = normalize(file.dist) + '.js';
+            fpath = iduri.normalize(file.src),
+            dist = iduri.normalize(file.dist) + '.js';
 
         // don't transport debug css files
         if (/\-debug\.css$/.test(fpath)) return;
@@ -68,7 +62,7 @@ exports.init = function (grunt){
     // the real css parser
     exports.cssParser = function (file, options){
         var banner,
-            dist = normalize(file.dist),
+            dist = iduri.normalize(file.dist),
             code = file.code,
             codeAst = css.parse(code)[0],
             id = iduri.idFromPackage(options.pkg, file.name, options.format);

@@ -2,18 +2,14 @@
  * deploy task
  * author : Newton
  **/
-var path = require('path');
+var path = require('path'),
+    iduri = require('cmd-helper').iduri;
 
 module.exports = function (grunt){
     var linefeed = grunt.util.linefeed,
         script = require('./lib/script').init(grunt),
         style = require('./lib/style').init(grunt),
         log = require('../log').init(grunt);
-
-    // normalize uri to linux format
-    function normalize(uri){
-        return path.normalize(uri).replace(/\\/g, '/');
-    }
 
     // registerMultiTask
     grunt.registerMultiTask('deploy', 'Deploy cmd modules.', function (){
@@ -54,10 +50,10 @@ module.exports = function (grunt){
         // loop files
         that.files.forEach(function (file){
             file.src.forEach(function (fpath){
-                var include, excludes, extname,
-                    dist, data, banner, parsers;
+                var dist, parsers, data,
+                    extname, include, excludes;
 
-                fpath = normalize(fpath);
+                fpath = iduri.normalize(fpath);
                 // file include
                 include = options.include || 'default';
                 include = grunt.util._.isFunction(include) ? include(fpath) : include;
@@ -68,8 +64,8 @@ module.exports = function (grunt){
                 excludes = Array.isArray(excludes) ? excludes : [excludes];
                 options.excludes = grunt.util._.uniq(excludes);
                 // real file path
-                dist = normalize(path.join(options.output, fpath));
-                fpath = normalize(path.join(file.cwd, fpath));
+                dist = iduri.normalize(iduri.join(options.output, fpath));
+                fpath = iduri.normalize(iduri.join(file.cwd, fpath));
 
                 // file not found
                 if (!grunt.file.exists(fpath)) {
@@ -95,26 +91,21 @@ module.exports = function (grunt){
                 parsers = options.parsers[extname];
                 // deploy file start
                 data = parsers({
-                    src: fpath
+                    src: fpath,
+                    dist: dist
                 }, options);
 
                 // merger fail
                 if (!data) return;
 
-                // banner
-                banner = grunt.util._.isString(options.banner) ? options.banner : '';
-                banner = banner.trim();
-                banner = banner ? banner + linefeed : banner;
-                dist = normalize(path.join(options.output, data.minify.dist));
-
-                grunt.file.write(dist, banner + data.minify.code);
+                grunt.file.write(dist, options.banner + data.minify.code);
                 log.ok('Deploy to'.cyan, dist.grey);
 
                 // get sourcemap
                 if (options.sourcemap) {
                     if (data.sourcemap) {
                         // source map, for the online debug, now chrome support sourcemap
-                        dist = normalize(path.join(options.output, data.sourcemap.dist));
+                        dist = data.sourcemap.dist;
                         grunt.file.write(dist, data.sourcemap.code);
                         log.ok('Deploy to'.cyan, dist.grey);
                     }
@@ -123,8 +114,8 @@ module.exports = function (grunt){
                 // get debugfile
                 if (options.debugfile) {
                     // debug file
-                    dist = normalize(path.join(options.output, data.source.dist));
-                    grunt.file.write(dist, banner + data.source.code);
+                    dist = data.source.dist;
+                    grunt.file.write(dist, options.banner + data.source.code);
                     log.ok('Deploy to'.cyan, dist.grey);
                 }
             });

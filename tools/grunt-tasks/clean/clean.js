@@ -5,18 +5,14 @@
  * Copyright (c) 2014 Tim Branyen, contributors
  * Licensed under the MIT license.
  */
-var path = require('path');
+var path = require('path'),
+    iduri = require('cmd-helper').iduri;
 
 module.exports = function (grunt){
     var rimraf = require('./rimraf')(grunt);
 
-    // normalize uri to linux format
-    function normalize(uri){
-        return path.normalize(uri).replace(/\\/g, '/');
-    }
-
     function clean(filepath, options){
-        filepath = normalize(filepath);
+        filepath = iduri.normalize(filepath);
 
         if (!grunt.file.exists(filepath)) {
             return false;

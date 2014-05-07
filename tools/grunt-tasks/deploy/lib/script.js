@@ -15,11 +15,6 @@ exports.init = function (grunt){
         log = require('../../log').init(grunt),
         verbose = grunt.option('verbose');
 
-    // normalize uri to linux format
-    function normalize(uri){
-        return path.normalize(uri).replace(/\\/g, '/');
-    }
-
     // debug source
     function modify(code, parsers){
         var parsed = ast.modify(code, function (v){
@@ -60,17 +55,16 @@ exports.init = function (grunt){
     // combine, not include the excludes file
     // default read file from fpath, but you can set from code string by set fromstr args
     function combine(fpath, options){
-        var records, buffer = '',
-            excludes = options.excludes;
-
-        // reset records
-        grunt.option('concat-records', {});
-
-        records = grunt.option('concat-records');
+        var buffer = '',
+            excludes = options.excludes,
+            records = grunt.option('concat-records');
 
         // deep combine helper
         function walk(fpath, options){
             var code, meta;
+
+            // normalize path
+            fpath = iduri.normalize(fpath);
 
             // cache readed file, prevent an circle loop, optimize efficiency
             if (records[fpath]) return;
@@ -98,13 +92,12 @@ exports.init = function (grunt){
                             id = iduri.absolute(meta.id, id);
                         }
 
-                        file = iduri.normalize(iduri.appendext(id));
+                        file = iduri.appendext(iduri.realpath(id));
 
                         // deep combine
-                        if (id !== meta.id
-                            && excludes.indexOf(id) === -1
-                            && /\.js$/i.test(file)) {
-                            walk(normalize(path.join(options.librarys, options.root, file)), options);
+                        if (id !== meta.id && excludes.indexOf(id) === -1
+                            && file.length > 3 && file.slice(-3) === '.js') {
+                            walk(path.join(options.librarys, options.root, file), options);
                         }
                     });
                 } else {
@@ -129,22 +122,21 @@ exports.init = function (grunt){
 
     // exports js concat
     exports.jsConcat = function (file, options){
-        var buffer = '',
-            code, meta, bufferAst,
+        var code, meta, bufferAst,
+            records = {}, buffer = '',
             excludes = options.excludes,
             fpath = file.src,
-            dist = normalize(path.relative(path.join(options.librarys, options.root), file.src)),
             data = {
                 minify: {
-                    dist: dist
+                    dist: file.dist
                 },
                 source: {
-                    dist: dist.replace(/\.js$/i, '-debug.js')
+                    dist: file.dist.slice(0, -3) + '-debug.js'
                 }
             };
 
         // reset records
-        grunt.option('concat-records', {});
+        grunt.option('concat-records', records);
 
         // combine
         switch (options.include) {
@@ -162,8 +154,13 @@ exports.init = function (grunt){
                                 id = iduri.absolute(meta.id, id);
 
                                 if (excludes.indexOf(id) === -1 && id !== meta.id) {
-                                    file = iduri.normalize(iduri.appendext(id));
-                                    fpath = normalize(path.join(options.librarys, options.root, file));
+                                    file = iduri.appendext(iduri.realpath(id));
+                                    fpath = iduri.normalize(path.join(options.librarys, options.root, file));
+
+                                    // cache readed file, prevent an circle loop, optimize efficiency
+                                    if (records[fpath]) return;
+
+                                    records[fpath] = true;
 
                                     if (grunt.file.exists(fpath)) {
                                         buffer += grunt.file.read(fpath) + linefeed;

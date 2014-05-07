@@ -3,17 +3,13 @@
  * author : Newton
  **/
 var path = require('path'),
+    iduri = require('cmd-helper').iduri,
     VERSION_RE = /^(\d+\.){2}\d+$/;
 
 module.exports = function (grunt){
     var script = require('./lib/script').init(grunt),
         style = require('./lib/style').init(grunt),
         log = require('../log').init(grunt);
-
-    // normalize uri to linux format
-    function normalize(uri){
-        return path.normalize(uri).replace(/\\/g, '/');
-    }
 
     // registerMultiTask
     grunt.registerMultiTask('transport', 'Transport everything into cmd.', function (){
@@ -66,7 +62,7 @@ module.exports = function (grunt){
                     subname = '', version = '';
 
                 // format fpath
-                fpath = normalize(fpath);
+                fpath = iduri.normalize(fpath);
                 // split file path
                 dirname = path.dirname(fpath).split('/');
                 // file name
@@ -95,7 +91,7 @@ module.exports = function (grunt){
                 options.pkg.name = options.name || name;
                 options.pkg.version = options.version || version;
                 fname = options.pkg.filename = options.filename || subname + fname;
-                fpath = normalize(path.join(file.cwd, fpath));
+                fpath = iduri.normalize(path.join(file.cwd, fpath));
 
                 // file not found
                 if (!grunt.file.exists(fpath)) {
@@ -104,14 +100,14 @@ module.exports = function (grunt){
                 }
 
                 // set dest file
-                dist = normalize(path.join(
+                dist = iduri.join(
                     options.librarys,
                     options.root,
                     family,
                     name,
                     version,
                     fname
-                ));
+                );
 
                 // if not has fileparsers copy file
                 if (!parsers) {
@@ -132,12 +128,14 @@ module.exports = function (grunt){
 
                 // file info
                 log.info('Transporting'.cyan, fpath.grey);
+
                 // fileparsers
                 parsers({
                     src: fpath,
                     code: code,
                     dist: dist
                 }, options);
+                
                 log.ok('Transport to'.cyan, dist.grey);
             });
         });

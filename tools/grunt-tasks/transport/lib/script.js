@@ -2,8 +2,7 @@
  * transport script helper
  * author : Newton
  **/
-var path = require('path'),
-    cmd = require('cmd-helper'),
+var cmd = require('cmd-helper'),
     ast = cmd.ast,
     iduri = cmd.iduri,
     RELPATH_RE = /^\.{1,2}[/\\]/;
@@ -13,17 +12,12 @@ exports.init = function (grunt){
         log = require('../../log').init(grunt),
         linefeed = grunt.util.linefeed;
 
-    // normalize uri to linux format
-    function normalize(uri){
-        return path.normalize(uri).replace(/\\/g, '/');
-    }
-
     // exports
     exports.jsParser = function (file, options){
         // file content
         var deps, async,
-            fpath = normalize(file.src),
-            dist = normalize(file.dist),
+            fpath = iduri.normalize(file.src),
+            dist = iduri.normalize(file.dist),
             code = ast.getAst(file.code),
             metas = ast.parse(code); // code meta array
 

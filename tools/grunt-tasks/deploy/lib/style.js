@@ -6,6 +6,7 @@ var path = require('path'),
     cmd = require('cmd-helper'),
     format = require('util').format,
     css = cmd.css,
+    iduri = cmd.iduri,
     CleanCss = require('clean-css'),
     RELPATH_RE = /^\.{1,2}[/\\]/;
 
@@ -14,11 +15,6 @@ exports.init = function (grunt){
         linefeed = grunt.util.linefeed,
         log = require('../../log').init(grunt),
         verbose = grunt.option('verbose');
-
-    // normalize uri to linux format
-    function normalize(uri){
-        return path.normalize(uri).replace(/\\/g, '/');
-    }
 
     // compressor css
     function minify(code){
@@ -31,10 +27,20 @@ exports.init = function (grunt){
 
     // css concat
     exports.cssConcat = function (file, options){
-        var records, dist, data,
+        var records,
             code = grunt.file.read(file.src),
             meta = css.parse(code)[0],
-            id = meta.id;
+            id = meta.id,
+            data = {
+                minify: {
+                    code: '',
+                    dist: file.dist
+                },
+                source: {
+                    code: '',
+                    dist: file.dist.slice(0, -4) + '-debug.css'
+                }
+            };
 
         // reset records
         grunt.option('concat-records', {});
@@ -70,28 +76,28 @@ exports.init = function (grunt){
 
         // import node
         function importNode(node, parent){
-            var fpath, meta;
+            var fpath, meta, id = node.id;
 
-            if (RELPATH_RE.test(node.id)) {
+            if (RELPATH_RE.test(id)) {
                 if (parent && parent.id) {
-                    node.id = iduri.absolute(parent.id, node.id);
+                    id = node.id = iduri.absolute(parent.id, id);
                 } else {
                     log.warn('  Require a transported file !'.red);
-                    return false;
+                    return;
                 }
             }
 
             // find file in librarys
-            fpath = normalize(path.join(options.librarys, options.root, node.id));
+            fpath = iduri.normalize(path.join(options.librarys, options.root, iduri.realpath(id)));
 
             // circle imports
-            if (records[node.id]) return false;
+            if (records[fpath]) return;
 
             // cache id
-            records[node.id] = node.id;
+            records[fpath] = true;
 
             // add extname
-            if (!/\.css$/.test(fpath)) fpath += '.css';
+            if (fpath.slice(-4) !== '.css') fpath += '.css';
 
             // file not exists
             if (!grunt.file.exists(fpath)) {
@@ -111,21 +117,6 @@ exports.init = function (grunt){
 
             return meta;
         }
-
-        // output file path relative the online resource root
-        dist = normalize(path.relative(path.join(options.librarys, options.root), file.src));
-
-        // merger info
-        data = {
-            minify: {
-                code: '',
-                dist: dist
-            },
-            source: {
-                code: '',
-                dist: dist.replace(/\.css$/i, '-debug.css')
-            }
-        };
 
         // compressor code
         log.info('  Compressoring css'.cyan);
