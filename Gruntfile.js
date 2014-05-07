@@ -102,9 +102,9 @@ module.exports = function (grunt){
                     combo = seajs + linefeed + config + linefeed + common.code,
                     banner = [
                         '/*!',
-                            ' * Sea.js ' + path.dirname(fpath).split('/').pop() + ' | seajs.org/LICENSE.md',
+                        ' * Sea.js ' + path.dirname(fpath).split('/').pop() + ' | seajs.org/LICENSE.md',
                         ' * Author: lifesinger & newton',
-                            ' * Date: ' + grunt.template.today('yyyy-mm-dd'),
+                        ' * Date: ' + grunt.template.today('yyyy-mm-dd'),
                         ' */'
                     ].join(linefeed), // banner
                     minify = UglifyJS.minify(combo, {
@@ -120,7 +120,7 @@ module.exports = function (grunt){
                 fpath = path.join('js', path.relative(root, fpath)).replace(/\\/g, '/');
 
                 // add source map url
-                if (sourcemap) {
+                if (debugfile && sourcemap) {
                     code += '/*' + linefeed
                         + '//@ sourceMappingURL=sea.js.map' + linefeed
                         + '*/';
