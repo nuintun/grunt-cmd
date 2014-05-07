@@ -46,8 +46,9 @@ exports.init = function (grunt){
 
     // fix sourcemap
     function fixSourcemap(code, file){
-        var mini = iduri.basename(file);
-        var full = mini.replace(/\.js$/i, '-debug.js');
+        var mini = iduri.basename(file),
+            full = mini.slice(0, -3) + '-debug.js';
+
         return code.replace('"file":"{{file}}"', '"file":"' + mini + '"')
             .replace('"sources":["?"]', '"sources":["' + full + '"]');
     }
@@ -207,7 +208,7 @@ exports.init = function (grunt){
 
                 log.ok('  Create script sourcemap success'.cyan);
             }
-            
+
             // create debug file
             log.info('  Creating debug script'.cyan);
             data.source.code = modify(buffer, options.parsers);
