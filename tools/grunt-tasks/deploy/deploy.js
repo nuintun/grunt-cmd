@@ -65,6 +65,7 @@ module.exports = function (grunt){
                 options.excludes = grunt.util._.uniq(excludes);
                 // real file path
                 fpath = iduri.join(file.cwd, fpath);
+                // dist path
                 dist = path.relative(options.root, path.relative(options.librarys, fpath));
                 dist = iduri.normalize(iduri.join(options.output, dist));
 
