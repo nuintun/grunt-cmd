@@ -2,10 +2,11 @@
  * log
  * author : Newton
  **/
+var slice = Array.prototype.slice;
+
 exports.init = function (grunt){
     var exports = {},
-        linefeed = grunt.util.linefeed,
-        slice = Array.prototype.slice;
+        linefeed = grunt.util.linefeed;
 
     // warn log
     exports.warn = function (){

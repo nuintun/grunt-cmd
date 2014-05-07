@@ -2,12 +2,13 @@
  * transport task
  * author : Newton
  **/
+var path = require('path'),
+    VERSION_RE = /^(\d+\.){2}\d+$/;
+
 module.exports = function (grunt){
-    var path = require('path'),
-        script = require('./lib/script').init(grunt),
+    var script = require('./lib/script').init(grunt),
         style = require('./lib/style').init(grunt),
-        log = require('../log').init(grunt),
-        VERSION_RE = /^(\d+\.){2}\d+$/;
+        log = require('../log').init(grunt);
 
     // normalize uri to linux format
     function normalize(uri){

@@ -2,17 +2,18 @@
  * deploy style helper
  * author : Newton
  **/
+var path = require('path'),
+    cmd = require('cmd-helper'),
+    format = require('util').format,
+    css = cmd.css,
+    CleanCss = require('clean-css'),
+    RELPATH_RE = /^\.{1,2}[/\\]/;
+
 exports.init = function (grunt){
     var exports = {},
         linefeed = grunt.util.linefeed,
-        path = require('path'),
-        cmd = require('cmd-helper'),
-        format = require('util').format,
-        css = cmd.css,
-        CleanCss = require('clean-css'),
         log = require('../../log').init(grunt),
-        verbose = grunt.option('verbose'),
-        RELPATH_RE = /^\.{1,2}[/\\]/;
+        verbose = grunt.option('verbose');
 
     // normalize uri to linux format
     function normalize(uri){

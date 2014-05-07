@@ -2,9 +2,10 @@
  * deploy task
  * author : Newton
  **/
+var path = require('path');
+
 module.exports = function (grunt){
-    var path = require('path'),
-        linefeed = grunt.util.linefeed,
+    var linefeed = grunt.util.linefeed,
         script = require('./lib/script').init(grunt),
         style = require('./lib/style').init(grunt),
         log = require('../log').init(grunt);

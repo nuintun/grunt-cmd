@@ -2,17 +2,18 @@
  * deploy script helper
  * author : Newton
  **/
+var path = require('path'),
+    cmd = require('cmd-helper'),
+    ast = cmd.ast,
+    iduri = cmd.iduri,
+    UglifyJS = require('uglify-js'),
+    RELPATH_RE = /^\.{1,2}[/\\]/;
+
 exports.init = function (grunt){
     var exports = {},
         linefeed = grunt.util.linefeed,
-        path = require('path'),
-        cmd = require('cmd-helper'),
-        ast = cmd.ast,
-        iduri = cmd.iduri,
-        UglifyJS = require('uglify-js'),
         log = require('../../log').init(grunt),
-        verbose = grunt.option('verbose'),
-        RELPATH_RE = /^\.{1,2}[/\\]/;
+        verbose = grunt.option('verbose');
 
     // normalize uri to linux format
     function normalize(uri){

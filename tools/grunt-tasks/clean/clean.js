@@ -5,9 +5,10 @@
  * Copyright (c) 2014 Tim Branyen, contributors
  * Licensed under the MIT license.
  */
+var path = require('path');
+
 module.exports = function (grunt){
-    var path = require('path'),
-        rimraf = require('./rimraf');
+    var rimraf = require('./rimraf')(grunt);
 
     // normalize uri to linux format
     function normalize(uri){

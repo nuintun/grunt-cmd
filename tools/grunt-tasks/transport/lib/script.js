@@ -2,15 +2,16 @@
  * transport script helper
  * author : Newton
  **/
+var path = require('path'),
+    cmd = require('cmd-helper'),
+    ast = cmd.ast,
+    iduri = cmd.iduri,
+    RELPATH_RE = /^\.{1,2}[/\\]/;
+
 exports.init = function (grunt){
     var exports = {},
-        path = require('path'),
-        cmd = require('cmd-helper'),
-        ast = cmd.ast,
-        iduri = cmd.iduri,
         log = require('../../log').init(grunt),
-        linefeed = grunt.util.linefeed,
-        RELPATH_RE = /^\.{1,2}[/\\]/;
+        linefeed = grunt.util.linefeed;
 
     // normalize uri to linux format
     function normalize(uri){

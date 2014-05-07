@@ -2,18 +2,19 @@
  * transport style helper
  * author : Newton
  **/
+var path = require('path'),
+    CleanCss = require('clean-css'),
+    format = require('util').format,
+    cmd = require('cmd-helper'),
+    ast = cmd.ast,
+    iduri = cmd.iduri,
+    css = cmd.css,
+    RELPATH_RE = /^\.{1,2}[/\\]/;
+
 exports.init = function (grunt){
     var exports = {},
-        path = require('path'),
-        CleanCss = require('clean-css'),
-        format = require('util').format,
-        cmd = require('cmd-helper'),
-        ast = cmd.ast,
-        iduri = cmd.iduri,
-        css = cmd.css,
         log = require('../../log').init(grunt),
-        linefeed = grunt.util.linefeed,
-        RELPATH_RE = /^\.{1,2}[/\\]/;
+        linefeed = grunt.util.linefeed;
 
     // normalize uri to linux format
     function normalize(uri){
