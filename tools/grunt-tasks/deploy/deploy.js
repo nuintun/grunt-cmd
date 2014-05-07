@@ -64,8 +64,9 @@ module.exports = function (grunt){
                 excludes = Array.isArray(excludes) ? excludes : [excludes];
                 options.excludes = grunt.util._.uniq(excludes);
                 // real file path
-                dist = iduri.normalize(iduri.join(options.output, fpath));
-                fpath = iduri.normalize(iduri.join(file.cwd, fpath));
+                fpath = iduri.join(file.cwd, fpath);
+                dist = path.relative(options.root, path.relative(options.librarys, fpath));
+                dist = iduri.normalize(iduri.join(options.output, dist));
 
                 // file not found
                 if (!grunt.file.exists(fpath)) {
