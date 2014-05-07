@@ -58,7 +58,7 @@ exports.init = function (grunt){
     function combine(fpath, options){
         var buffer = '',
             excludes = options.excludes,
-            records = grunt.option('concat-records');
+            records = grunt.option('concat-records') || {};
 
         // deep combine helper
         function walk(fpath, options){
