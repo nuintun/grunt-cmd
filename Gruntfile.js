@@ -2,12 +2,13 @@
  * Gruntfile
  * 打包合并配置文件
  */
+var path = require('path'),
+    UglifyJS = require('uglify-js'),
+    cmd = require('cmd-helper');
+
 module.exports = function (grunt){
-    var path = require('path'),
-        UglifyJS = require('uglify-js'),
-        cmd = require('cmd-helper'),
-        debugfile = grunt.option('debugfile'),
-        sourcemap = grunt.option('sourcemap'),
+    var debugfile = grunt.option('debugfile') === true,
+        sourcemap = grunt.option('sourcemap') === true,
         ScriptDeploy = require('./tools/grunt-tasks/deploy/lib/script').init(grunt),
         combine = ScriptDeploy.combine,
         modify = ScriptDeploy.modify,
@@ -89,6 +90,7 @@ module.exports = function (grunt){
     // 初始化网站脚本执行环境
     grunt.registerTask('environ', 'Initialize execution environment.', function (){
         grunt.log.write('$ '.green + 'Initializing execution environment'.cyan + ' ...' + linefeed);
+
         // move seajs
         grunt.file.recurse('script', function (fpath, root){
             fpath = fpath.replace(/\\/g, '/');
@@ -151,6 +153,7 @@ module.exports = function (grunt){
     // 修复资源引用路径
     grunt.registerTask('pathfix', 'Resource path fix.', function (){
         grunt.log.write('$ '.green + 'Fixing resource path'.cyan + ' ...' + grunt.util.linefeed);
+
         grunt.file.recurse('.librarys', function (fpath){
             var code;
 
@@ -164,6 +167,7 @@ module.exports = function (grunt){
             code = code.replace(/\s*\/Res\/style\//img, '/Res/css/');
             grunt.file.write(fpath, code);
         });
+
         grunt.log.write('$ '.green + 'Fix resource path'.cyan + ' ...').ok();
     });
 
