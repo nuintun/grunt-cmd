@@ -192,22 +192,22 @@ exports.init = function (grunt){
         data.minify.code = bufferAst.code + linefeed;
         log.ok('  Compressoring script success'.cyan);
 
-        if (options.sourcemap) {
-            // create source map
-            log.info('  Creating script sourcemap'.cyan);
-
-            data.minify.code += '/*' + linefeed + '//@ sourceMappingURL='
-                + iduri.basename(data.minify.dist) + '.map' + linefeed + '*/';
-            // sourcemap info
-            data.sourcemap = {
-                dist: data.minify.dist + '.map',
-                code: fixSourcemap(bufferAst.map, data.minify.dist)
-            };
-
-            log.ok('  Create script sourcemap success'.cyan);
-        }
-
         if (options.debugfile) {
+            if (options.sourcemap) {
+                // create source map
+                log.info('  Creating script sourcemap'.cyan);
+
+                data.minify.code += '/*' + linefeed + '//@ sourceMappingURL='
+                    + iduri.basename(data.minify.dist) + '.map' + linefeed + '*/';
+                // sourcemap info
+                data.sourcemap = {
+                    dist: data.minify.dist + '.map',
+                    code: fixSourcemap(bufferAst.map, data.minify.dist)
+                };
+
+                log.ok('  Create script sourcemap success'.cyan);
+            }
+            
             // create debug file
             log.info('  Creating debug script'.cyan);
             data.source.code = modify(buffer, options.parsers);
