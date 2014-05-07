@@ -101,18 +101,18 @@ module.exports = function (grunt){
                 grunt.file.write(dist, options.banner + data.minify.code);
                 log.ok('Deploy to'.cyan, dist.grey);
 
-                // get sourcemap
-                if (options.sourcemap) {
-                    if (data.sourcemap) {
-                        // source map, for the online debug, now chrome support sourcemap
-                        dist = data.sourcemap.dist;
-                        grunt.file.write(dist, data.sourcemap.code);
-                        log.ok('Deploy to'.cyan, dist.grey);
-                    }
-                }
-
                 // get debugfile
                 if (options.debugfile) {
+                    // get sourcemap
+                    if (options.sourcemap) {
+                        if (data.sourcemap) {
+                            // source map, for the online debug, now chrome support sourcemap
+                            dist = data.sourcemap.dist;
+                            grunt.file.write(dist, data.sourcemap.code);
+                            log.ok('Deploy to'.cyan, dist.grey);
+                        }
+                    }
+
                     // debug file
                     dist = data.source.dist;
                     grunt.file.write(dist, options.banner + data.source.code);

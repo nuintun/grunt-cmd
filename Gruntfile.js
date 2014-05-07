@@ -102,9 +102,9 @@ module.exports = function (grunt){
                     combo = seajs + linefeed + config + linefeed + common.code,
                     banner = [
                         '/*!',
-                        ' * Sea.js ' + path.dirname(fpath).split('/').pop() + ' | seajs.org/LICENSE.md',
+                            ' * Sea.js ' + path.dirname(fpath).split('/').pop() + ' | seajs.org/LICENSE.md',
                         ' * Author: lifesinger & newton',
-                        ' * Date: ' + grunt.template.today('yyyy-mm-dd'),
+                            ' * Date: ' + grunt.template.today('yyyy-mm-dd'),
                         ' */'
                     ].join(linefeed), // banner
                     minify = UglifyJS.minify(combo, {
@@ -129,17 +129,17 @@ module.exports = function (grunt){
                 // 生成sea.js
                 grunt.file.write(fpath, code);
 
-                // 生成sea.js.map
-                if (sourcemap) {
-                    var map = minify.map
-                        .replace('"file":"{{file}}"', '"file":"sea.js"')
-                        .replace('"sources":["?"]', '"sources":["sea-debug.js"]'); // source map
-
-                    grunt.file.write(fpath + '.map', map);
-                }
-
                 // 生成sea-debug.js
                 if (debugfile) {
+                    // 生成sea.js.map
+                    if (sourcemap) {
+                        var map = minify.map
+                            .replace('"file":"{{file}}"', '"file":"sea.js"')
+                            .replace('"sources":["?"]', '"sources":["sea-debug.js"]'); // source map
+
+                        grunt.file.write(fpath + '.map', map);
+                    }
+
                     grunt.file.write(fpath.replace(/\.js$/i, '-debug.js'), modify(combo, {'.js': true, '.css': true}));
                 }
             }
