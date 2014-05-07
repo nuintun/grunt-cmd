@@ -24,7 +24,7 @@ module.exports = function (grunt){
 
         grunt.log.write('$ '.green
             + (options['no-write'] ? 'Not actually cleaning ' : 'Cleaning ').cyan
-            + filepath.grey + '...');
+            + filepath.grey + ' ...');
 
         // Only delete cwd or outside cwd if --force enabled. Be careful, people!
         if (!options.force) {
