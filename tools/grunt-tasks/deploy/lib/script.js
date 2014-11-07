@@ -37,11 +37,15 @@ exports.init = function (grunt){
 
     // compressor code
     function minify(code){
-        return UglifyJS.minify(code, {
+        var result = UglifyJS.minify(code, {
             outSourceMap: '{{file}}',
             fromString: true,
             warnings: verbose
         });
+        
+        result.code = result.code.replace(/\n\/\/# sourceMappingURL=\{\{file\}\}$/i, '');
+        
+        return result;
     }
 
     // fix sourcemap
