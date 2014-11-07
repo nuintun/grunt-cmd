@@ -19,8 +19,8 @@ module.exports = function (grunt){
         }
 
         grunt.log.write('$ '.green
-            + (options['no-write'] ? 'Not actually cleaning ' : 'Cleaning ').cyan
-            + filepath.grey + ' ...');
+        + (options['no-write'] ? 'Not actually cleaning ' : 'Cleaning ').cyan
+        + filepath.grey + ' ...');
 
         // Only delete cwd or outside cwd if --force enabled. Be careful, people!
         if (!options.force) {
@@ -45,7 +45,7 @@ module.exports = function (grunt){
         } catch (e) {
             grunt.log.error();
             grunt.fail.warn('Unable to delete '.red
-                + filepath.grey + (' file (' + e.message + ').').red, e);
+            + filepath.grey + (' file (' + e.message + ').').red, e);
         }
     }
 

@@ -1,6 +1,6 @@
 /**
  * transport script helper
- * author : Newton
+ * author : Nuintun
  **/
 var cmd = require('cmd-helper'),
     ast = cmd.ast,
@@ -79,13 +79,13 @@ exports.init = function (grunt){
     // helpers
     function moduleDependencies(deps, type){
         grunt.log.write(deps.length ?
-            '$   '.green + (type + ' : ').green
-            + '['.grey + linefeed + '$   '.green + '  '
-            + deps.map(function (deps){
+        '$   '.green + (type + ' : ').green
+        + '['.grey + linefeed + '$   '.green + '  '
+        + deps.map(function (deps){
             return deps.green;
         }).join(','.grey + linefeed + '$   '.green + '  ')
-            + linefeed + '$   '.green + ']'.grey + linefeed :
-            '$   '.green + (type + ' : ').green + '[]'.grey + linefeed);
+        + linefeed + '$   '.green + ']'.grey + linefeed :
+        '$   '.green + (type + ' : ').green + '[]'.grey + linefeed);
     }
 
     // exports

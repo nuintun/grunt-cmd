@@ -1,6 +1,6 @@
 /**
  * deploy style helper
- * author : Newton
+ * author : Nuintun
  **/
 var path = require('path'),
     cmd = require('cmd-helper'),
@@ -88,7 +88,7 @@ exports.init = function (grunt){
             }
 
             // find file in librarys
-            fpath = iduri.normalize(path.join(options.librarys, options.root, iduri.realpath(id)));
+            fpath = iduri.normalize(path.join(options.buildRoot, options.familyRoot, iduri.realpath(id)));
 
             // circle imports
             if (records[fpath]) return;
@@ -124,7 +124,7 @@ exports.init = function (grunt){
         data.minify.code = minify(data.minify.code);
         log.ok('  Compressor css success'.cyan);
 
-        if (options.debugfile) {
+        if (options.debugFile) {
             // create debug file
             log.info('  Creating debug css'.cyan);
             data.source.code = format('/*! define %s */', data.source.dist) + linefeed + code;

@@ -7,26 +7,26 @@ var path = require('path'),
     cmd = require('cmd-helper');
 
 module.exports = function (grunt){
-    var debugfile = grunt.option('debugfile') === true,
-        sourcemap = grunt.option('sourcemap') === true,
+    var debugFile = grunt.option('debugfile') === true,
+        sourceMap = grunt.option('sourcemap') === true,
         ScriptDeploy = require('./tools/grunt-tasks/deploy/lib/script').init(grunt),
         combine = ScriptDeploy.combine,
         modify = ScriptDeploy.modify,
-        configAst = UglifyJS.parse(grunt.file.read('script/config.js')),
+        configAst = UglifyJS.parse(grunt.file.read('js/config.js')),
         pkg = {alias: getAlias(configAst)},
         excludes = [pkg.alias['$']],
         linefeed = grunt.util.linefeed,
         CSSBanner = [
             '/*!',
             ' * Project: CSS Assets',
-            ' * Author: newton',
+            ' * Author: nuintun',
             ' * Date: <%= grunt.template.today("yyyy-mm-dd") %>',
             ' */'
         ].join(linefeed),
         JSBanner = [
             '/*!',
             ' * Project: JS Assets',
-            ' * Author: newton',
+            ' * Author: nuintun',
             ' * Date: <%= grunt.template.today("yyyy-mm-dd") %>',
             ' */'
         ].join(linefeed);
@@ -64,15 +64,15 @@ module.exports = function (grunt){
             }
         });
 
-        return ast.transform(trans).print_to_string({ beautify: true, comments: true });
+        return ast.transform(trans).print_to_string({beautify: true, comments: true});
     }
 
     // 获取整站公用脚本common.js
     function getCommon(fpath, excludes){
         var modules = [],
             common = combine(fpath, {
-                librarys: '.librarys',
-                root: 'script',
+                buildRoot: '.build',
+                familyRoot: 'js',
                 excludes: Array.isArray(excludes) ? excludes : []
             });
 
@@ -92,18 +92,18 @@ module.exports = function (grunt){
         grunt.log.write('$ '.green + 'Initializing execution environment'.cyan + ' ...' + linefeed);
 
         // move seajs
-        grunt.file.recurse('script', function (fpath, root){
+        grunt.file.recurse('js', function (fpath, root){
             fpath = fpath.replace(/\\/g, '/');
 
             if (/\/sea\.js$/i.test(fpath)) {
                 var seajs = grunt.file.read(fpath),
                     config = getConfig(configAst),
-                    common = getCommon('.librarys/script/view/common.js', [pkg.alias['$']]),
+                    common = getCommon('.build/js/view/common.js', [pkg.alias['$']]),
                     combo = seajs + linefeed + config + linefeed + common.code,
                     banner = [
                         '/*!',
                         ' * Sea.js ' + path.dirname(fpath).split('/').pop() + ' | seajs.org/LICENSE.md',
-                        ' * Author: lifesinger & newton',
+                        ' * Author: lifesinger & nuintun',
                         ' * Date: ' + grunt.template.today('yyyy-mm-dd'),
                         ' */'
                     ].join(linefeed), // banner
@@ -112,27 +112,29 @@ module.exports = function (grunt){
                         fromString: true,
                         warnings: grunt.option('verbose')
                     }), // minify code
-                    code = banner + linefeed + minify.code;
+                    code = banner + linefeed
+                        + minify.code.replace(/\n\/\/# sourceMappingURL=\{\{file\}\}$/i, '');
 
                 // 排除common.js中已经包含的模块
                 excludes = excludes.concat(common.modules);
 
-                fpath = path.join('js', path.relative(root, fpath)).replace(/\\/g, '/');
+                fpath = path.join('script', path.relative(root, fpath)).replace(/\\/g, '/');
 
                 // add source map url
-                if (debugfile && sourcemap) {
+                if (sourceMap) {
+                    debugFile = sourceMap;
                     code += '/*' + linefeed
-                        + '//@ sourceMappingURL=sea.js.map' + linefeed
-                        + '*/';
+                    + '//@ sourceMappingURL=sea.js.map' + linefeed
+                    + '*/';
                 }
 
                 // 生成sea.js
                 grunt.file.write(fpath, code);
 
                 // 生成sea-debug.js
-                if (debugfile) {
+                if (debugFile) {
                     // 生成sea.js.map
-                    if (sourcemap) {
+                    if (sourceMap) {
                         var map = minify.map
                             .replace('"file":"{{file}}"', '"file":"sea.js"')
                             .replace('"sources":["?"]', '"sources":["sea-debug.js"]'); // source map
@@ -144,7 +146,7 @@ module.exports = function (grunt){
                 }
             }
 
-            grunt.file.copy(fpath, path.join('js', path.relative(root, fpath)).replace(/\\/g, '/'));
+            grunt.file.copy(fpath, path.join('script', path.relative(root, fpath)).replace(/\\/g, '/'));
         }, 'seajs');
 
         grunt.log.write('$ '.green + 'Initialize execution environment'.cyan + ' ...').ok();
@@ -154,7 +156,7 @@ module.exports = function (grunt){
     grunt.registerTask('pathfix', 'Resource path fix.', function (){
         grunt.log.write('$ '.green + 'Fixing resource path'.cyan + ' ...' + grunt.util.linefeed);
 
-        grunt.file.recurse('.librarys', function (fpath){
+        grunt.file.recurse('.build', function (fpath){
             var code;
 
             if (!grunt.file.isFile(fpath)) return;
@@ -164,7 +166,7 @@ module.exports = function (grunt){
             if (!/\.css$/i.test(path.basename(fpath))) return;
 
             code = grunt.file.read(fpath);
-            code = code.replace(/\s*\/Res\/style\//img, '/Res/css/');
+            code = code.replace(/\s*\/Res\/css\//img, '/Res/style/');
             grunt.file.write(fpath, code);
         });
 
@@ -177,7 +179,7 @@ module.exports = function (grunt){
         transport: {
             options: {
                 pkg: pkg,
-                root: 'script'
+                familyRoot: 'js'
             },
             base: {
                 options: {
@@ -185,7 +187,7 @@ module.exports = function (grunt){
                 },
                 files: [
                     {
-                        cwd: 'script/base',
+                        cwd: 'js/base',
                         src: ['**/*'],
                         filter: 'isFile'
                     }
@@ -197,7 +199,7 @@ module.exports = function (grunt){
                 },
                 files: [
                     {
-                        cwd: 'script/util',
+                        cwd: 'js/util',
                         src: ['**/*'],
                         filter: 'isFile'
                     }
@@ -209,7 +211,7 @@ module.exports = function (grunt){
                 },
                 files: [
                     {
-                        cwd: 'script/common',
+                        cwd: 'js/common',
                         src: ['**/*'],
                         filter: 'isFile'
                     }
@@ -221,7 +223,7 @@ module.exports = function (grunt){
                 },
                 files: [
                     {
-                        cwd: 'script/view',
+                        cwd: 'js/view',
                         src: ['**/*'],
                         filter: 'isFile'
                     }
@@ -229,12 +231,12 @@ module.exports = function (grunt){
             },
             css: {
                 options: {
-                    root: 'style',
+                    familyRoot: 'css',
                     family: 'default'
                 },
                 files: [
                     {
-                        cwd: 'style/default',
+                        cwd: 'css/default',
                         src: ['**/*'],
                         filter: 'isFile'
                     }
@@ -242,12 +244,12 @@ module.exports = function (grunt){
             },
             htc: {
                 options: {
-                    root: 'style',
+                    familyRoot: 'css',
                     family: 'css3pie'
                 },
                 files: [
                     {
-                        cwd: 'style/css3pie',
+                        cwd: 'css/css3pie',
                         src: ['**/*'],
                         filter: 'isFile'
                     }
@@ -258,14 +260,14 @@ module.exports = function (grunt){
         deploy: {
             options: {
                 pkg: pkg,
-                root: 'script',
+                familyRoot: 'js',
                 banner: JSBanner,
                 include: '*',
                 excludes: function (){
                     return excludes;
                 },
-                debugfile: debugfile,
-                sourcemap: sourcemap
+                debugFile: debugFile,
+                sourceMap: sourceMap
             },
             // 非脚本文件处理
             other: {
@@ -274,7 +276,7 @@ module.exports = function (grunt){
                 },
                 files: [
                     {
-                        cwd: '.librarys/script',
+                        cwd: '.build/js',
                         src: ['**/*'],
                         /**
                          * 文件过滤
@@ -285,7 +287,7 @@ module.exports = function (grunt){
                             if (grunt.file.isFile(file)) {
                                 file = file.replace(/\\/g, '/');
                                 var basename = path.basename(file);
-                                if (!(/\.js$/i.test(basename) && /\/script\/view\//.test(file))) {
+                                if (!(/\.js$/i.test(basename) && /\/js\/view\//.test(file))) {
                                     return file;
                                 }
                             }
@@ -297,7 +299,7 @@ module.exports = function (grunt){
             view: {
                 files: [
                     {
-                        cwd: '.librarys/script/view',
+                        cwd: '.build/js/view',
                         src: ['**/*'],
                         /**
                          * 文件过滤
@@ -314,13 +316,13 @@ module.exports = function (grunt){
             // 站点样式
             css: {
                 options: {
-                    root: 'style',
-                    output: 'css',
+                    familyRoot: 'css',
+                    outputRoot: 'style',
                     banner: CSSBanner
                 },
                 files: [
                     {
-                        cwd: '.librarys/style',
+                        cwd: '.build/css',
                         src: ['**/*'],
                         /**
                          * 文件过滤
@@ -342,11 +344,11 @@ module.exports = function (grunt){
             },
             // 清理以前的旧文件
             output: {
-                src: ['js', 'css']
+                src: ['script', 'style']
             },
             // 清理临时转换目录
             librarys: {
-                src: ['.librarys']
+                src: ['.build']
             }
         }
     });

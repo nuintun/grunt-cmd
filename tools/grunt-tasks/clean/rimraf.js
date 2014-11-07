@@ -1,5 +1,5 @@
 /**
- * Created by Newton on 2014/5/6.
+ * rimraf modify by Nuintun on 2014/5/6.
  */
 var fs = require('fs'),
     path = require('path'),

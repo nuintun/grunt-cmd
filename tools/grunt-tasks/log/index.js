@@ -1,6 +1,6 @@
 /**
  * log
- * author : Newton
+ * author : Nuintun
  **/
 var slice = Array.prototype.slice;
 

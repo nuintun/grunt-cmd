@@ -1,6 +1,6 @@
 /**
  * deploy script helper
- * author : Newton
+ * author : Nuintun
  **/
 var path = require('path'),
     cmd = require('cmd-helper'),
@@ -22,7 +22,7 @@ exports.init = function (grunt){
 
             return ext && parsers[ext] ?
                 v.replace(new RegExp('\\' + ext + '$'), '-debug' + ext) :
-                v + '-debug';
+            v + '-debug';
         });
 
         // return code
@@ -42,9 +42,9 @@ exports.init = function (grunt){
             fromString: true,
             warnings: verbose
         });
-        
+
         result.code = result.code.replace(/\n\/\/# sourceMappingURL=\{\{file\}\}$/i, '');
-        
+
         return result;
     }
 
@@ -102,7 +102,7 @@ exports.init = function (grunt){
                         // deep combine
                         if (id !== meta.id && excludes.indexOf(id) === -1
                             && file.length > 3 && file.slice(-3) === '.js') {
-                            walk(path.join(options.librarys, options.root, file), options);
+                            walk(path.join(options.buildRoot, options.familyRoot, file), options);
                         }
                     });
                 } else {
@@ -160,7 +160,7 @@ exports.init = function (grunt){
 
                                 if (excludes.indexOf(id) === -1 && id !== meta.id) {
                                     file = iduri.appendext(iduri.realpath(id));
-                                    fpath = iduri.normalize(path.join(options.librarys, options.root, file));
+                                    fpath = iduri.normalize(path.join(options.buildRoot, options.familyRoot, file));
 
                                     // cache readed file, prevent an circle loop, optimize efficiency
                                     if (records[fpath]) return;
@@ -197,15 +197,15 @@ exports.init = function (grunt){
         data.minify.code = bufferAst.code + linefeed;
         log.ok('  Compressoring script success'.cyan);
 
-        if (options.debugfile) {
-            if (options.sourcemap) {
+        if (options.debugFile) {
+            if (options.sourceMap) {
                 // create source map
                 log.info('  Creating script sourcemap'.cyan);
 
                 data.minify.code += '/*' + linefeed + '//@ sourceMappingURL='
-                    + iduri.basename(data.minify.dist) + '.map' + linefeed + '*/';
+                + iduri.basename(data.minify.dist) + '.map' + linefeed + '*/';
                 // sourcemap info
-                data.sourcemap = {
+                data.map = {
                     dist: data.minify.dist + '.map',
                     code: fixSourcemap(bufferAst.map, data.minify.dist)
                 };

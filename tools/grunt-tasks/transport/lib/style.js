@@ -1,6 +1,6 @@
 /**
  * transport style helper
- * author : Newton
+ * author : Nuintun
  **/
 var CleanCss = require('clean-css'),
     format = require('util').format,
