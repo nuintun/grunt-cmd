@@ -2,7 +2,7 @@
   "name": "cmd-grunt-build",
   "version": "2.0.0",
   "homepage": "https://github.com/nuintun/cmd-grunt-build",
-  "description": "cmd transport and deploy with grunt !",
+  "description": "A tools for cmd transport and deploy",
   "author": {
     "name": "Nuintun",
     "email": "<nuintun@qq.com>"
