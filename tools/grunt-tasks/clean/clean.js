@@ -5,8 +5,7 @@
  * Copyright (c) 2014 Tim Branyen, contributors
  * Licensed under the MIT license.
  */
-var path = require('path'),
-  iduri = require('cmd-helper').iduri;
+var iduri = require('cmd-helper').iduri;
 
 module.exports = function (grunt){
   var rimraf = require('./rimraf')(grunt);
