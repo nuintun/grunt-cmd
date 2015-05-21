@@ -19,10 +19,10 @@
     "url": "https://github.com/nuintun/cmd-grunt-build.git"
   },
   "dependencies": {
-    "grunt": ">=0.4.4",
-    "cmd-helper": ">=0.2.6",
-    "clean-css": ">=2.0.0",
-    "uglify-js": ">=2.4.15"
+    "grunt": "^0.4.5",
+    "cmd-helper": "^0.2.7",
+    "clean-css": "^3.2.10",
+    "uglify-js": "^2.4.23"
   },
   "devDependencies": {}
 }
