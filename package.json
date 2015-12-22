@@ -19,7 +19,7 @@
     "grunt": "^0.4.5",
     "cmd-helper": "^0.2.7",
     "clean-css": "^3.2.10",
-    "uglify-js": "^2.5.0"
+    "uglify-js": "^2.6.1"
   },
   "devDependencies": {}
 }
