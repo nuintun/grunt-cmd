@@ -1,5 +1,4 @@
-grunt-cmd
-=========
+# grunt-cmd
 
 >A tools for cmd transport and deploy
 >
